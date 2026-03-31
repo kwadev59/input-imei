@@ -1,0 +1,17 @@
+[Unit]
+Description=ESC/POS Print Queue Agent — Astra Agro Gadget System
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/bin/bash /opt/print-agent/print_agent.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=print-agent
+
+[Install]
+WantedBy=multi-user.target

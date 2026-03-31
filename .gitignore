@@ -1,0 +1,8 @@
+.env
+.env.*
+env
+password.md
+vendor/
+writable/
+*.log
+*.cache
