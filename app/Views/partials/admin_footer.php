@@ -62,14 +62,14 @@
     // Restore desktop sidebar state from local storage
     if (window.innerWidth >= 992 && localStorage.getItem('sidebar_minimized') === 'true') {
         sidebar.classList.add('minimized');
-        if(content) content.classList.add('minimized');
+        document.querySelectorAll('.content').forEach(el => el.classList.add('minimized'));
     }
 
     if (desktopToggle) {
         desktopToggle.addEventListener('click', function(e) {
             e.preventDefault();
             sidebar.classList.toggle('minimized');
-            if(content) content.classList.toggle('minimized');
+            document.querySelectorAll('.content').forEach(el => el.classList.toggle('minimized'));
             
             // Save state
             localStorage.setItem('sidebar_minimized', sidebar.classList.contains('minimized'));

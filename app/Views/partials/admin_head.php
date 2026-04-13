@@ -705,29 +705,73 @@
                 transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             
-            .sidebar.minimized { width: 80px; }
-            .content.minimized { margin-left: 80px; }
+            .sidebar.minimized { 
+                width: 80px; 
+            }
+            .content.minimized { 
+                margin-left: 80px; 
+            }
             
             .sidebar.minimized .sidebar-brand {
-                padding: 18px 10px 10px;
-                flex-direction: column;
-                align-items: center;
-                gap: 15px;
+                padding: 18px 10px;
+                display: flex;
+                justify-content: center;
             }
+
+            .sidebar.minimized .sidebar-brand-logo {
+                display: flex;
+                justify-content: center;
+                width: 100%;
+            }
+
             .sidebar.minimized .sidebar-brand-text,
             .sidebar.minimized .sidebar-section-title,
             .sidebar.minimized .nav-item span,
+            .sidebar.minimized .submenu-icon,
             .sidebar.minimized .sidebar-user-info,
             .sidebar.minimized .sidebar-logout span {
-                display: none;
+                display: none !important;
             }
-            .sidebar.minimized .sidebar-brand-logo { display: none; } /* hide logo when minimized */
-            .sidebar.minimized .nav-item { justify-content: center; padding: 12px 0; }
-            .sidebar.minimized .nav-item i { margin: 0; font-size: 1.25rem; }
-            .sidebar.minimized .sidebar-user { justify-content: center; padding: 10px; background: transparent; }
-            .sidebar.minimized .sidebar-user-avatar { width: 32px; height: 32px; }
-            .sidebar.minimized .sidebar-logout { justify-content: center; padding: 12px 0; }
-            .sidebar.minimized .sidebar-logout i { margin: 0; font-size: 1.25rem; }
+
+            /* Hide collapse when minimized */
+            .sidebar.minimized .collapse {
+                display: none !important;
+            }
+            
+            .sidebar.minimized .nav-item { 
+                justify-content: center; 
+                padding: 12px 0;
+                margin: 0 8px;
+            }
+            
+            .sidebar.minimized .nav-item i:not(.submenu-icon) { 
+                margin: 0; 
+                font-size: 1.35rem; 
+                width: 100%;
+                display: flex;
+                justify-content: center;
+            }
+            
+            .sidebar.minimized .sidebar-user { 
+                justify-content: center; 
+                padding: 10px; 
+                background: transparent; 
+            }
+            
+            .sidebar.minimized .sidebar-user-avatar { 
+                width: 40px; 
+                height: 40px; 
+            }
+            
+            .sidebar.minimized .sidebar-logout { 
+                justify-content: center; 
+                padding: 12px 0; 
+            }
+            
+            .sidebar.minimized .sidebar-logout i { 
+                margin: 0; 
+                font-size: 1.35rem; 
+            }
             
             #desktopSidebarToggle {
                 cursor: pointer;
@@ -743,6 +787,8 @@
                 transition: all 0.2s;
             }
             #desktopSidebarToggle:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+            /* Tooltip behavior or simple title on hover when minimized could be added here later */
         }
 
         /* ======== MISC ======== */
