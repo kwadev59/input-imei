@@ -17,9 +17,20 @@ $routes->get('/dashboard/export_latest_inputs_txt', 'Dashboard::export_latest_in
 $routes->get('/dashboard/report/(:num)', 'Dashboard::report/$1'); // New Route for PDF Report
 
 $routes->get('/mandor', 'Mandor::index'); // New Route for List Mandor
+$routes->get('/mandor/gadgets', 'Mandor::gadgets'); // New Route for List Gadget Mandor
+$routes->post('/mandor/save-gadget', 'Mandor::save_gadget'); // Save/Assign Gadget to Mandor
 $routes->post('/mandor/import', 'Mandor::import'); // Import Mandor Feature
 $routes->post('/mandor/change-password/(:num)', 'Mandor::changePassword/$1'); // Change Password
 $routes->post('/mandor/change-tipe/(:num)', 'Mandor::changeTipe/$1'); // Change Tipe Mandor
+
+// Settings
+$routes->get('/settings/popup', 'Settings::popup');
+$routes->post('/settings/popup', 'Settings::popup');
+
+// Public Mandor Input
+$routes->get('/public/input-gadget', 'PublicController::input_gadget');
+$routes->post('/public/input-gadget', 'PublicController::save_gadget');
+$routes->post('/public/validate-imei', 'PublicController::validate_imei');
 
 // Karyawan Management
 $routes->get('/karyawan', 'Karyawan::index');

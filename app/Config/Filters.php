@@ -76,11 +76,12 @@ class Filters extends BaseFilters
         'before' => [
             // Aktifkan session check di seluruh aplikasi
             'isLoggedIn' => ['except' => [
-                '/',           // Root/Home
-                'auth',        // Login page (exact)
-                'auth/*',      // Login process, logout, etc.
-                'api/print',   // Root API Print (POST submit)
-                'api/print/*', // API di-handle oleh tokenAuth filter
+                '/',                    // Root/Home
+                'auth',                 // Login page (exact)
+                'auth/*',               // Login process, logout, etc.
+                'public/*',             // Public pages (no login required)
+                'api/print',            // Root API Print (POST submit)
+                'api/print/*',          // API di-handle oleh tokenAuth filter
             ]],
             // 'honeypot',
             // 'csrf',

@@ -24,6 +24,7 @@ $menu_groups = [
         'label' => 'Data Master',
         'items' => [
             'mandor'   => ['icon' => 'bi-person-badge-fill', 'label' => 'List Mandor',   'url' => 'mandor'],
+            'mandor_gadget' => ['icon' => 'bi-phone-fill', 'label' => 'List Gadget Mandor', 'url' => 'mandor/gadgets'],
             'karyawan' => ['icon' => 'bi-people-fill',       'label' => 'Data Karyawan', 'url' => 'karyawan'],
             'real_karyawan' => ['icon' => 'bi-person-vcard-fill', 'label' => 'Real Karyawan', 'url' => 'real-karyawan'],
             'real_gadget'   => ['icon' => 'bi-router-fill',       'label' => 'Real Gadget', 'url' => 'real-gadget'],
@@ -39,6 +40,14 @@ $menu_groups = [
             'rekap'     => ['icon' => 'bi-bar-chart-fill',    'label' => 'Rekap Afdeling', 'url' => 'rekap'],
             'rekap_mpp' => ['icon' => 'bi-briefcase-fill',    'label' => 'Rekap MPP', 'url' => 'rekap-mpp'],
             'gadget_dobel'=> ['icon' => 'bi-phone-vibrate-fill',  'label' => 'Gadget Dobel', 'url' => 'gadget-dobel'],
+        ]
+    ],
+    'settings' => [
+        'is_group' => true,
+        'icon' => 'bi-gear-fill',
+        'label' => 'Pengaturan',
+        'items' => [
+            'settings_popup' => ['icon' => 'bi-chat-left-dots-fill', 'label' => 'Pop-up Mandor', 'url' => 'settings/popup'],
         ]
     ]
 ];
