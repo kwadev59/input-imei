@@ -35,6 +35,10 @@ class Mandor extends Controller
         return view('mandor/index', $data);
     }
 
+    /**
+     * High Performance Import Mandor
+     * Mengoptimalkan komunikasi lintas VPS (Web <-> DB via NetBird)
+     */
     public function import()
     {
         $session = session();
@@ -43,70 +47,117 @@ class Mandor extends Controller
         }
 
         $file = $this->request->getFile('csv_file');
-        
-        if(!$file->isValid()){
-             return redirect()->back()->with('error', 'File tidak valid.');
+        if(!$file || !$file->isValid()){
+             return redirect()->back()->with('error', 'File tidak valid atau tidak ditemukan.');
         }
 
-        // CSV Format: NPK, Nama Lengkap, Afdeling, Tipe (Optional), PT/SITE (Optional)
-        $csv = array_map('str_getcsv', file($file->getTempName()));
-        $userModel = new \App\Models\UserModel();
-        $count = 0;
+        // 1. Parsing CSV ke Array
+        $csvData = array_map('str_getcsv', file($file->getTempName()));
+        $header = array_shift($csvData); // Ambil header
         
-        // Skip header
-        $header = array_shift($csv); 
+        if (empty($csvData)) {
+            return redirect()->back()->with('error', 'File CSV kosong.');
+        }
 
-        foreach($csv as $row){
-            if(count($row) < 3) continue;
+        $db = \Config\Database::connect();
+        $userModel = new \App\Models\UserModel();
+        
+        // --- PHASE 1: PRE-FETCHING (OPTIMASI UTAMA) ---
+        // Ambil semua NPK mandor yang ada di DB dalam SATU query saja.
+        // Kita simpan dalam array map [npk => id] untuk pengecekan cepat di memori (O(1)).
+        $existingUsers = $userModel->select('id, npk')
+                                   ->where('role', 'mandor')
+                                   ->findAll();
+        $npkMap = array_column($existingUsers, 'id', 'npk');
+
+        $dataToInsert = [];
+        $dataToUpdate = [];
+        $now = date('Y-m-d H:i:s');
+        $defaultPassword = password_hash('123456', PASSWORD_BCRYPT); // Hash sekali di luar loop (hemat CPU)
+
+        // --- PHASE 2: DATA PREPARATION (IN-MEMORY PROCESSING) ---
+        foreach($csvData as $row){
+            if(count($row) < 3) continue; // Skip jika kolom tidak lengkap
             
             $npk = trim($row[0]);
+            if(empty($npk)) continue;
+
+            $namaLengkap = $row[1];
+            $afdeling   = $row[2];
+            $tipe       = 'Panen'; // Default
             
-            // Assume Type is in 4th column, or default to Panen
-            // Or try to detect from Name
-            $tipe = 'Panen';
+            // Logika deteksi tipe mandor
             if(isset($row[3]) && in_array(ucfirst(trim($row[3])), ['Panen', 'Rawat'])){
                 $tipe = ucfirst(trim($row[3]));
             } else {
-                // Auto-detect from name
-                $nama = strtolower($row[1]);
-                if(strpos($nama, 'rawat') !== false || strpos($nama, 'perawatan') !== false || strpos($nama, 'maintenance') !== false) {
+                $namaLower = strtolower($namaLengkap);
+                if(strpos($namaLower, 'rawat') !== false || strpos($namaLower, 'perawatan') !== false) {
                     $tipe = 'Rawat';
                 }
-                // Default stays 'Panen' if no match
             }
 
-            $pt_site = isset($row[4]) ? trim($row[4]) : '';
+            $ptSite = isset($row[4]) ? trim($row[4]) : '';
 
-            // Check if user exists
-            $exist = $userModel->where('npk', $npk)->first();
-            
-            if(!$exist){
-                $data = [
-                    'npk' => $npk,
-                    'nama_lengkap' => $row[1],
-                    'afdeling_id' => $row[2],
-                    'role' => 'mandor',
-                    'tipe_mandor' => $tipe,
-                    'pt_site' => $pt_site,
-                    'password_hash' => password_hash('123456', PASSWORD_BCRYPT), // Default password
-                    'created_at' => date('Y-m-d H:i:s'),
-                ];
-                $userModel->insert($data);
-                $count++;
+            // Payload dasar
+            $payload = [
+                'nama_lengkap' => $namaLengkap,
+                'afdeling_id'  => $afdeling,
+                'tipe_mandor'  => $tipe,
+                'pt_site'      => $ptSite,
+                'updated_at'   => $now,
+            ];
+
+            // Cek apakah NPK sudah ada di memory map (Tanpa Query ke DB)
+            if(isset($npkMap[$npk])){
+                // Masukkan ke antrian UPDATE
+                $payload['id'] = $npkMap[$npk]; // Primary key untuk updateBatch
+                $dataToUpdate[] = $payload;
             } else {
-                // Update existing mandor info (name/afdeling/tipe)
-                $data = [
-                    'nama_lengkap' => $row[1],
-                    'afdeling_id' => $row[2],
-                    'tipe_mandor' => $tipe,
-                    'pt_site' => $pt_site,
-                    'updated_at' => date('Y-m-d H:i:s'),
-                ];
-                $userModel->update($exist['id'], $data);
+                // Masukkan ke antrian INSERT
+                $payload['npk'] = $npk;
+                $payload['role'] = 'mandor';
+                $payload['password_hash'] = $defaultPassword;
+                $payload['created_at'] = $now;
+                $dataToInsert[] = $payload;
             }
         }
 
-        return redirect()->to('/mandor')->with('success', "$count Mandor baru berhasil ditambahkan! Default Password: 123456");
+        // --- PHASE 3: DATABASE EXECUTION (BATCH & TRANSACTION) ---
+        try {
+            $db->transBegin(); // Mulai Transaksi
+
+            // 1. Proses INSERT dalam potongan (Chunk)
+            if (!empty($dataToInsert)) {
+                // Batasi per 200 data untuk menghindari limit memory & paket TCP
+                $chunks = array_chunk($dataToInsert, 200);
+                foreach ($chunks as $chunk) {
+                    $db->table('users')->insertBatch($chunk);
+                }
+            }
+
+            // 2. Proses UPDATE dalam potongan (Chunk)
+            if (!empty($dataToUpdate)) {
+                $chunks = array_chunk($dataToUpdate, 200);
+                foreach ($chunks as $chunk) {
+                    // updateBatch menggunakan kolom 'id' sebagai referensi
+                    $db->table('users')->updateBatch($chunk, 'id');
+                }
+            }
+
+            if ($db->transStatus() === false) {
+                $db->transRollback();
+                return redirect()->back()->with('error', 'Terjadi kesalahan saat memproses batch data.');
+            }
+
+            $db->transCommit(); // Simpan permanen
+
+            $totalProcessed = count($dataToInsert) + count($dataToUpdate);
+            return redirect()->to('/mandor')->with('success', "Berhasil memproses $totalProcessed data Mandor (Insert: ".count($dataToInsert).", Update: ".count($dataToUpdate).").");
+
+        } catch (\Exception $e) {
+            $db->transRollback();
+            return redirect()->back()->with('error', 'Database Error: ' . $e->getMessage());
+        }
     }
 
     public function changePassword($id)
