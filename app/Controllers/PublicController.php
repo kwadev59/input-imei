@@ -124,44 +124,27 @@ class PublicController extends Controller
 
         $db = \Config\Database::connect();
 
-        // 1. Check if NPK exists in users (to get name)
-        $user = $db->table('users')->where('npk', $npk)->get()->getRowArray();
-        $nama = $user ? $user['nama_lengkap'] : 'Mandor (Self-Report)';
+        // Check if NPK already reported something
+        $existingReport = $db->table('mandor_self_reports')->where('npk', $npk)->get()->getRowArray();
 
-        // 2. Validation: Check if IMEI matches master_gadget
-        $existingGadget = $db->table('master_gadget')->where('imei', $imei)->get()->getRowArray();
-
-        $match_status = "Tidak Sesuai";
-        if($existingGadget){
-            $match_status = "Sesuai";
-            // Update existing gadget
-            $db->table('master_gadget')->where('id', $existingGadget['id'])->update([
-                'npk_pengguna' => $npk,
-                'nama_pengguna' => $nama,
+        if($existingReport){
+            // Update existing report
+            $db->table('mandor_self_reports')->where('id', $existingReport['id'])->update([
+                'imei' => $imei,
                 'aplikasi' => $aplikasi,
-                'status_desc' => 'TERPAKAI',
-                'note' => 'Self-Reported by Mandor',
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         } else {
-            // Insert new record as requested "tidak masalah tetap lakukan simpan"
-            $db->table('master_gadget')->insert([
+            // Insert new report
+            $db->table('mandor_self_reports')->insert([
+                'npk' => $npk,
                 'imei' => $imei,
-                'npk_pengguna' => $npk,
-                'nama_pengguna' => $nama,
                 'aplikasi' => $aplikasi,
-                'status_desc' => 'TERPAKAI',
-                'note' => 'Self-Reported (IMEI Baru)',
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
 
-        $msg = "Terima kasih, data gadget Anda berhasil disimpan.";
-        if($match_status == "Tidak Sesuai") {
-            $msg .= " (Catatan: IMEI ini tidak ditemukan di database master awal, namun tetap kami simpan).";
-        }
-
-        return redirect()->to('/public/input-gadget')->with('success', $msg);
+        return redirect()->to('/public/input-gadget')->with('success', "Terima kasih, data gadget Anda berhasil disimpan.");
     }
 }

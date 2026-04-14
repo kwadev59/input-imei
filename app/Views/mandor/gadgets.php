@@ -39,7 +39,7 @@
                             <th>Tipe</th>
                             <th>IMEI Gadget</th>
                             <th>Aplikasi</th>
-                            <th>Status Gadget</th>
+                            <th>Terakhir Update</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -63,18 +63,14 @@
                                 <?php if($row['imei']): ?>
                                     <span class="font-monospace fw-bold text-primary"><?= esc($row['imei']) ?></span>
                                 <?php else: ?>
-                                    <span class="text-muted small italic">Tidak ada gadget</span>
+                                    <span class="text-muted small italic">Belum ada data</span>
                                 <?php endif; ?>
                             </td>
                             <td><small><?= esc($row['aplikasi'] ?? '-') ?></small></td>
                             <td>
-                                <?php if($row['status_gadget']): ?>
-                                    <?php 
-                                        $statusClass = 'bg-secondary';
-                                        if($row['status_gadget'] == 'TERPAKAI' || $row['status_gadget'] == 'NORMAL') $statusClass = 'bg-success';
-                                        if($row['status_gadget'] == 'RUSAK' || $row['status_gadget'] == 'HILANG') $statusClass = 'bg-danger';
-                                    ?>
-                                    <span class="badge <?= $statusClass ?>"><?= esc($row['status_gadget']) ?></span>
+                                <?php if($row['reported_at']): ?>
+                                    <div class="small text-muted"><?= date('d/m/Y', strtotime($row['reported_at'])) ?></div>
+                                    <div class="small text-muted" style="font-size: 0.7rem;"><?= date('H:i', strtotime($row['reported_at'])) ?> WIB</div>
                                 <?php else: ?>
                                     -
                                 <?php endif; ?>
@@ -85,6 +81,7 @@
                                         data-bs-target="#editGadgetModal"
                                         data-npk="<?= esc($row['npk']) ?>"
                                         data-nama="<?= esc($row['nama_lengkap']) ?>"
+                                        data-aplikasi="<?= esc($row['aplikasi'] ?? '') ?>"
                                         data-imei="<?= esc($row['imei'] ?? '') ?>">
                                     <i class="bi bi-pencil-square"></i> <?= $row['imei'] ? 'Edit' : 'Input' ?>
                                 </button>
@@ -117,8 +114,17 @@
                         <div id="modal-npk-display" class="small text-muted font-monospace"></div>
                     </div>
                     <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Aplikasi</label>
+                        <select name="aplikasi" id="modal-aplikasi" class="form-select" required>
+                            <option value="">Pilih aplikasi</option>
+                            <?php foreach($applications as $app): ?>
+                                <option value="<?= esc($app) ?>"><?= esc($app) ?></option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
                         <label class="form-label small fw-bold text-muted">Nomor IMEI</label>
-                        <input type="text" name="imei" id="modal-imei" class="form-control" required placeholder="Masukkan 15 digit IMEI">
+                        <input type="text" name="imei" id="modal-imei" class="form-control" required placeholder="Masukkan 15 digit IMEI" maxlength="15">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -141,10 +147,12 @@ document.addEventListener('DOMContentLoaded', function() {
             const npk = btn.getAttribute('data-npk');
             const nama = btn.getAttribute('data-nama');
             const imei = btn.getAttribute('data-imei');
+            const aplikasi = btn.getAttribute('data-aplikasi');
             
             document.getElementById('modal-npk').value = npk;
             document.getElementById('modal-nama').value = nama;
             document.getElementById('modal-imei').value = imei;
+            document.getElementById('modal-aplikasi').value = aplikasi;
             
             document.getElementById('modal-nama-display').textContent = nama;
             document.getElementById('modal-npk-display').textContent = 'NPK: ' + npk;

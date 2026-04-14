@@ -174,8 +174,8 @@ class Mandor extends Controller
         $search = $this->request->getVar('search');
         
         $builder = $db->table('users');
-        $builder->select('users.*, master_gadget.imei, master_gadget.status_desc as status_gadget, master_gadget.aplikasi, master_gadget.pt as gadget_pt, master_gadget.afd as gadget_afd');
-        $builder->join('master_gadget', 'master_gadget.npk_pengguna = users.npk', 'left');
+        $builder->select('users.*, mandor_self_reports.imei, mandor_self_reports.aplikasi, mandor_self_reports.updated_at as reported_at');
+        $builder->join('mandor_self_reports', 'mandor_self_reports.npk = users.npk', 'left');
         $builder->where('users.role', 'mandor');
         
         if($search){
@@ -183,11 +183,21 @@ class Mandor extends Controller
                     ->like('users.nama_lengkap', $search)
                     ->orLike('users.npk', $search)
                     ->orLike('users.afdeling_id', $search)
-                    ->orLike('master_gadget.imei', $search)
+                    ->orLike('mandor_self_reports.imei', $search)
                     ->groupEnd();
         }
 
         $data['mandor_gadgets'] = $builder->orderBy('users.afdeling_id', 'ASC')->get()->getResultArray();
+        
+        // Get unique applications for dropdown (from master_gadget is fine as reference)
+        $apps = $db->table('master_gadget')
+                   ->select('aplikasi')
+                   ->where('aplikasi IS NOT NULL')
+                   ->where('aplikasi !=', '')
+                   ->distinct()
+                   ->get()->getResultArray();
+        $data['applications'] = array_column($apps, 'aplikasi');
+
         $data['search'] = $search;
         $data['user_nama'] = $session->get('nama');
         $data['active_menu'] = 'mandor_gadget';
@@ -203,51 +213,40 @@ class Mandor extends Controller
         }
 
         $npk = $this->request->getVar('npk');
-        $nama = $this->request->getVar('nama');
         $imei = trim($this->request->getVar('imei') ?? '');
+        $aplikasi = $this->request->getVar('aplikasi');
 
         if(empty($imei)){
             return redirect()->back()->with('error', 'IMEI tidak boleh kosong.');
         }
 
-        $db = \Config\Database::connect();
-        
-        // 1. Check if this IMEI is already used by someone else in master_gadget
-        $existingGadget = $db->table('master_gadget')->where('imei', $imei)->get()->getRowArray();
-        
-        // 2. Check if this Mandor already has another IMEI assigned
-        $currentGadget = $db->table('master_gadget')->where('npk_pengguna', $npk)->get()->getRowArray();
-
-        if($currentGadget && $currentGadget['imei'] !== $imei) {
-            // Unassign current gadget first
-            $db->table('master_gadget')->where('id', $currentGadget['id'])->update([
-                'npk_pengguna' => null,
-                'nama_pengguna' => null,
-                'status_desc' => 'CADANGAN',
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
+        if(empty($aplikasi)){
+            return redirect()->back()->with('error', 'Aplikasi tidak boleh kosong.');
         }
 
-        if($existingGadget){
-            // Update existing gadget to this mandor
-            $db->table('master_gadget')->where('id', $existingGadget['id'])->update([
-                'npk_pengguna' => $npk,
-                'nama_pengguna' => $nama,
-                'status_desc' => 'TERPAKAI',
+        $db = \Config\Database::connect();
+        
+        // Check if NPK already reported something in mandor_self_reports
+        $existingReport = $db->table('mandor_self_reports')->where('npk', $npk)->get()->getRowArray();
+
+        if($existingReport){
+            // Update existing report
+            $db->table('mandor_self_reports')->where('id', $existingReport['id'])->update([
+                'imei' => $imei,
+                'aplikasi' => $aplikasi,
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         } else {
-            // Create new record in master_gadget
-            $db->table('master_gadget')->insert([
+            // Insert new report
+            $db->table('mandor_self_reports')->insert([
+                'npk' => $npk,
                 'imei' => $imei,
-                'npk_pengguna' => $npk,
-                'nama_pengguna' => $nama,
-                'status_desc' => 'TERPAKAI',
+                'aplikasi' => $aplikasi,
                 'created_at' => date('Y-m-d H:i:s'),
                 'updated_at' => date('Y-m-d H:i:s')
             ]);
         }
 
-        return redirect()->to('/mandor/gadgets')->with('success', "IMEI untuk Mandor $nama berhasil diperbarui.");
+        return redirect()->to('/mandor/gadgets')->with('success', "Data gadget mandor berhasil diperbarui di tabel laporan.");
     }
 }
