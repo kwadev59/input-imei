@@ -250,7 +250,16 @@ class Dashboard extends Controller
                 
                 if(!$gadget) {
                     $row['verifikasi'] = 'not_found';
+                    $row['aplikasi'] = '-';
                 } else {
+                    $row['aplikasi'] = $gadget['aplikasi'] ?? '-';
+                    $row['pt_master'] = $gadget['pt'] ?? '-';
+                    $row['afd_master'] = $gadget['afd'] ?? '-';
+                    $row['pos_title_master'] = $gadget['pos_title'] ?? '-';
+                    $row['tipe_asset_master'] = $gadget['tipe_asset'] ?? '-';
+                    $row['group_asset_master'] = $gadget['group_asset'] ?? '-';
+                    $row['part_asset_master'] = $gadget['part_asset'] ?? '-';
+
                     $npkOwner = trim($gadget['npk_pengguna'] ?? '');
                     $nikTarget = trim($row['nik_karyawan']);
                     $row['pemilik_master'] = $gadget['nama_pengguna'] ?? '';

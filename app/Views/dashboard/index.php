@@ -160,9 +160,14 @@
                             <td><span class="fw-bold"><?= $m['total_input'] ?></span> <span class="text-muted">data</span></td>
                             <td><span class="text-muted" style="font-size:0.82rem"><?= date('d M Y H:i', strtotime($m['last_input'])) ?></span></td>
                             <td>
-                                <a href="<?= base_url('dashboard/report/'.$m['id']) ?>" target="_blank" class="btn btn-sm btn-outline-danger px-3">
-                                    <i class="bi bi-file-pdf me-1"></i> PDF
-                                </a>
+                                <div class="d-flex gap-1">
+                                    <a href="<?= base_url('dashboard/report/'.$m['id']) ?>" target="_blank" class="btn btn-sm btn-outline-danger px-2" title="Lihat PDF">
+                                        <i class="bi bi-file-pdf"></i> PDF
+                                    </a>
+                                    <a href="<?= base_url('dashboard/report/'.$m['id'].'?auto_print=1') ?>" target="_blank" class="btn btn-sm btn-outline-success px-2" title="Print Semua Label Online">
+                                        <i class="bi bi-printer"></i> Print
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>
