@@ -163,11 +163,11 @@
             <table class="pos-table">
                 <tr>
                     <td class="label">NAMA</td>
-                    <td class="value">: <span id="print-nama"></span></td>
+                    <td class="value">: <strong id="print-nama" style="text-transform: uppercase;"></strong></td>
                 </tr>
                 <tr>
                     <td class="label">NPK</td>
-                    <td class="value">: <span id="print-npk"></span></td>
+                    <td class="value">: <strong id="print-npk"></strong></td>
                 </tr>
                 <tr>
                     <td class="label">APLIKASI</td>
@@ -175,7 +175,7 @@
                 </tr>
             </table>
             
-            <div class="pos-imei-section">
+            <div class="pos-imei-box">
                 <div class="imei-label">NOMOR IMEI</div>
                 <div id="print-imei" class="imei-value"></div>
             </div>
@@ -185,11 +185,11 @@
             </div>
         </div>
         
-        <div class="pos-divider"></div>
+        <div class="pos-divider" style="border-top-style: solid;"></div>
         
         <div class="pos-footer">
-            <div>DICETAK: <?= date('d/m/Y H:i') ?> WIB</div>
-            <div class="footer-bold">MILIK PERUSAHAAN - JANGAN DIRUSAK</div>
+            <div style="font-weight: bold; font-size: 9pt;">DICETAK: <?= date('d/m/Y H:i') ?> WIB</div>
+            <div class="footer-notice">ASET PERUSAHAAN - JANGAN DIRUSAK</div>
         </div>
     </div>
 </div>
@@ -197,7 +197,6 @@
 <style>
 /* === POS 80mm Print Media === */
 @media print {
-    /* Hide everything else */
     body > *:not(#posPrintArea) { display: none !important; }
     
     #posPrintArea { 
@@ -209,34 +208,35 @@
     }
 
     .pos-receipt {
-        width: 74mm; /* safe margin for 80mm paper */
+        width: 76mm; /* use as much as possible for 80mm */
         margin: 0 auto;
         padding: 5mm 0;
-        font-family: 'Arial', sans-serif;
+        font-family: 'Courier New', Courier, monospace; /* Courier is usually clearest on POS */
         color: #000;
+        line-height: 1.3;
     }
 
     .pos-header {
         text-align: center;
-        margin-bottom: 8px;
+        margin-bottom: 10px;
+        border: 2px solid #000;
+        padding: 5px;
     }
 
     .pos-title {
         font-size: 14pt;
-        font-weight: 900;
-        letter-spacing: 1px;
+        font-weight: bold;
         margin-bottom: 2px;
     }
 
     .pos-subtitle {
         font-size: 8pt;
         font-weight: normal;
-        text-transform: uppercase;
     }
 
     .pos-divider {
-        border-top: 2px dashed #000;
-        margin: 10px 0;
+        border-top: 3px solid #000;
+        margin: 12px 0;
         width: 100%;
     }
 
@@ -246,70 +246,62 @@
 
     .pos-table {
         width: 100%;
-        margin-bottom: 12px;
+        margin-bottom: 15px;
     }
 
     .pos-table td {
-        font-size: 10pt;
-        padding: 3px 0;
+        font-size: 11pt;
+        padding: 4px 0;
         vertical-align: top;
     }
 
     .pos-table td.label {
-        width: 25%;
+        width: 32%;
         font-weight: bold;
     }
 
-    .pos-table td.value {
-        width: 75%;
-        font-weight: normal;
-    }
-
-    .pos-imei-section {
+    .pos-imei-box {
         text-align: center;
-        background: #000;
-        color: #fff;
-        padding: 8px 0;
+        border: 4px solid #000; /* Thick border instead of solid black */
+        padding: 10px 5px;
         margin: 15px 0;
-        border-radius: 4px;
-        -webkit-print-color-adjust: exact;
     }
 
     .imei-label {
-        font-size: 8pt;
-        font-weight: normal;
-        margin-bottom: 2px;
+        font-size: 9pt;
+        font-weight: bold;
+        text-decoration: underline;
+        margin-bottom: 5px;
     }
 
     .imei-value {
-        font-size: 16pt;
-        font-weight: 900;
-        letter-spacing: 1.5px;
-        font-family: 'Courier New', Courier, monospace;
+        font-size: 18pt; /* Larger for better readability */
+        font-weight: bold;
+        letter-spacing: 1px;
     }
 
     .pos-qr-wrapper {
         text-align: center;
-        margin: 15px 0;
+        margin: 20px 0;
     }
 
     .pos-qr-wrapper img {
-        width: 35mm;
-        height: 35mm;
+        width: 40mm;
+        height: 40mm;
     }
 
     .pos-footer {
         text-align: center;
         font-size: 8pt;
-        line-height: 1.4;
     }
 
-    .footer-bold {
+    .footer-notice {
         font-weight: bold;
-        margin-top: 4px;
-        border: 1px solid #000;
-        display: inline-block;
-        padding: 2px 8px;
+        margin-top: 6px;
+        font-size: 9pt;
+        text-transform: uppercase;
+        border-top: 1px solid #000;
+        padding-top: 4px;
     }
 }
 
