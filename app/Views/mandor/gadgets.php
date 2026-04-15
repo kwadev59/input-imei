@@ -13,6 +13,8 @@
 
     <?= view('partials/alerts') ?>
 
+    <div id="js-alert-container"></div>
+
     <div class="data-card">
         <div class="data-card-header">
             <h5><i class="bi bi-phone"></i> Gadget Mandor</h5>
@@ -76,15 +78,26 @@
                                 <?php endif; ?>
                             </td>
                             <td>
-                                <button type="button" class="btn btn-sm btn-outline-primary" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#editGadgetModal"
-                                        data-npk="<?= esc($row['npk']) ?>"
-                                        data-nama="<?= esc($row['nama_lengkap']) ?>"
-                                        data-aplikasi="<?= esc($row['aplikasi'] ?? '') ?>"
-                                        data-imei="<?= esc($row['imei'] ?? '') ?>">
-                                    <i class="bi bi-pencil-square"></i> <?= $row['imei'] ? 'Edit' : 'Input' ?>
-                                </button>
+                                <div class="d-flex gap-1">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editGadgetModal"
+                                            data-npk="<?= esc($row['npk']) ?>"
+                                            data-nama="<?= esc($row['nama_lengkap']) ?>"
+                                            data-aplikasi="<?= esc($row['aplikasi'] ?? '') ?>"
+                                            data-imei="<?= esc($row['imei'] ?? '') ?>">
+                                        <i class="bi bi-pencil-square"></i> <?= $row['imei'] ? 'Edit' : 'Input' ?>
+                                    </button>
+                                    <?php if($row['imei']): ?>
+                                        <button type="button" class="btn btn-sm btn-success btn-print-online" 
+                                                data-npk="<?= esc($row['npk']) ?>"
+                                                data-nama="<?= esc($row['nama_lengkap']) ?>"
+                                                data-aplikasi="<?= esc($row['aplikasi'] ?? '') ?>"
+                                                data-imei="<?= esc($row['imei'] ?? '') ?>">
+                                            <i class="bi bi-printer"></i> Print
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
                             </td>
                         </tr>
                         <?php endforeach; ?>
@@ -157,6 +170,78 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('modal-nama-display').textContent = nama;
             document.getElementById('modal-npk-display').textContent = 'NPK: ' + npk;
         });
+    }
+
+    // Handle Print Online
+    document.querySelectorAll('.btn-print-online').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const npk = this.getAttribute('data-npk');
+            const nama = this.getAttribute('data-nama');
+            const imei = this.getAttribute('data-imei');
+            const aplikasi = this.getAttribute('data-aplikasi');
+
+            if (!imei) {
+                showJsAlert('IMEI tidak ditemukan.', 'danger');
+                return;
+            }
+
+            // Lock button
+            const originalHtml = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            const payload = {
+                imei: imei,
+                nama_pengguna: nama,
+                npk_pengguna: npk,
+                aplikasi: aplikasi,
+                kerusakan: 'Label Mandor'
+            };
+
+            fetch('<?= base_url("api/print") ?>', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => response.json())
+            .then(data => {
+                this.disabled = false;
+                this.innerHTML = originalHtml;
+
+                if (data.status === 'queued') {
+                    showJsAlert(`<i class="bi bi-check-circle-fill me-2"></i> Job print <strong>#${data.job_id}</strong> masuk antrian.`, 'success');
+                } else {
+                    showJsAlert(`<i class="bi bi-exclamation-triangle me-2"></i> ${data.message || 'Gagal menambahkan antrian.'}`, 'danger');
+                }
+            })
+            .catch(error => {
+                this.disabled = false;
+                this.innerHTML = originalHtml;
+                console.error('Error:', error);
+                showJsAlert('Terjadi kesalahan jaringan.', 'danger');
+            });
+        });
+    });
+
+    function showJsAlert(message, type = 'success') {
+        const container = document.getElementById('js-alert-container');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4`;
+        alert.role = 'alert';
+        alert.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+        container.appendChild(alert);
+
+        // Auto-dismiss after 5s
+        setTimeout(() => {
+            const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+            if (bsAlert) bsAlert.close();
+        }, 5000);
     }
 });
 </script>
