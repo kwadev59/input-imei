@@ -89,7 +89,7 @@
                                         <i class="bi bi-pencil-square"></i> <?= $row['imei'] ? 'Edit' : 'Input' ?>
                                     </button>
                                     <?php if($row['imei']): ?>
-                                        <button type="button" class="btn btn-sm btn-success btn-print-online" 
+                                        <button type="button" class="btn btn-sm btn-success btn-print-offline" 
                                                 data-npk="<?= esc($row['npk']) ?>"
                                                 data-nama="<?= esc($row['nama_lengkap']) ?>"
                                                 data-aplikasi="<?= esc($row['aplikasi'] ?? '') ?>"
@@ -149,6 +149,81 @@
     </div>
 </div>
 
+<!-- ====== HIDDEN POS PRINT AREA (80mm) ====== -->
+<div id="posPrintArea">
+    <div class="pos-receipt">
+        <div class="pos-header">
+            <h3>LABEL GADGET MANDOR</h3>
+            <p>Sistem Input Data & Checklist</p>
+        </div>
+        <hr>
+        <div class="pos-body">
+            <table class="pos-table">
+                <tr>
+                    <td>Mandor</td>
+                    <td>: <span id="print-nama"></span></td>
+                </tr>
+                <tr>
+                    <td>NPK</td>
+                    <td>: <span id="print-npk"></span></td>
+                </tr>
+                <tr>
+                    <td>Aplikasi</td>
+                    <td>: <span id="print-aplikasi"></span></td>
+                </tr>
+                <tr>
+                    <td>IMEI</td>
+                    <td class="pos-imei">: <span id="print-imei"></span></td>
+                </tr>
+            </table>
+            <div class="pos-barcode-placeholder">
+                <div id="print-imei-large"></div>
+            </div>
+        </div>
+        <hr>
+        <div class="pos-footer">
+            <p>Dicetak pada: <?= date('d/m/Y H:i') ?></p>
+            <p>Aset Perusahaan - Harap Dijaga</p>
+        </div>
+    </div>
+</div>
+
+<style>
+/* === POS 80mm Print Media === */
+@media print {
+    body > *:not(#posPrintArea) { display: none !important; }
+    #posPrintArea { 
+        display: block !important; 
+        width: 80mm; 
+        margin: 0;
+        padding: 0;
+    }
+    .pos-receipt {
+        width: 72mm; /* safe margin for 80mm paper */
+        margin: 0 auto;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 10pt;
+        line-height: 1.2;
+    }
+    .pos-header { text-align: center; margin-bottom: 5px; }
+    .pos-header h3 { margin: 0; font-size: 12pt; }
+    .pos-header p { margin: 0; font-size: 8pt; }
+    .pos-body { margin: 10px 0; }
+    .pos-table { width: 100%; border-collapse: collapse; }
+    .pos-table td { vertical-align: top; padding: 2px 0; }
+    .pos-table td:first-child { width: 30%; }
+    .pos-imei { font-weight: bold; font-size: 11pt; }
+    .pos-barcode-placeholder { text-align: center; margin-top: 15px; border: 1px dashed #ccc; padding: 10px; }
+    #print-imei-large { font-size: 14pt; font-weight: bold; letter-spacing: 2px; }
+    .pos-footer { text-align: center; font-size: 7pt; margin-top: 10px; }
+    hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
+}
+
+@media screen {
+    #posPrintArea { display: none; }
+}
+</style>
+
 <?= view('partials/admin_footer') ?>
 
 <script>
@@ -172,8 +247,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Handle Print Online
-    document.querySelectorAll('.btn-print-online').forEach(btn => {
+    // Handle Print Offline
+    document.querySelectorAll('.btn-print-offline').forEach(btn => {
         btn.addEventListener('click', function() {
             const npk = this.getAttribute('data-npk');
             const nama = this.getAttribute('data-nama');
@@ -181,67 +256,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const aplikasi = this.getAttribute('data-aplikasi');
 
             if (!imei) {
-                showJsAlert('IMEI tidak ditemukan.', 'danger');
+                alert('IMEI tidak ditemukan.');
                 return;
             }
 
-            // Lock button
-            const originalHtml = this.innerHTML;
-            this.disabled = true;
-            this.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            // Fill the hidden POS area
+            document.getElementById('print-nama').textContent = nama;
+            document.getElementById('print-npk').textContent = npk;
+            document.getElementById('print-aplikasi').textContent = aplikasi || '-';
+            document.getElementById('print-imei').textContent = imei;
+            document.getElementById('print-imei-large').textContent = imei;
 
-            const payload = {
-                imei: imei,
-                nama_pengguna: nama,
-                npk_pengguna: npk,
-                aplikasi: aplikasi,
-                kerusakan: 'Label Mandor'
-            };
-
-            fetch('<?= base_url("api/print") ?>', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: JSON.stringify(payload)
-            })
-            .then(response => response.json())
-            .then(data => {
-                this.disabled = false;
-                this.innerHTML = originalHtml;
-
-                if (data.status === 'queued') {
-                    showJsAlert(`<i class="bi bi-check-circle-fill me-2"></i> Job print <strong>#${data.job_id}</strong> masuk antrian.`, 'success');
-                } else {
-                    showJsAlert(`<i class="bi bi-exclamation-triangle me-2"></i> ${data.message || 'Gagal menambahkan antrian.'}`, 'danger');
-                }
-            })
-            .catch(error => {
-                this.disabled = false;
-                this.innerHTML = originalHtml;
-                console.error('Error:', error);
-                showJsAlert('Terjadi kesalahan jaringan.', 'danger');
-            });
+            // Trigger browser print
+            window.print();
         });
     });
-
-    function showJsAlert(message, type = 'success') {
-        const container = document.getElementById('js-alert-container');
-        const alert = document.createElement('div');
-        alert.className = `alert alert-${type} alert-dismissible fade show shadow-sm border-0 rounded-3 mb-4`;
-        alert.role = 'alert';
-        alert.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-        `;
-        container.appendChild(alert);
-
-        // Auto-dismiss after 5s
-        setTimeout(() => {
-            const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
-            if (bsAlert) bsAlert.close();
-        }, 5000);
-    }
 });
 </script>
