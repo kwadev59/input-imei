@@ -153,37 +153,43 @@
 <div id="posPrintArea">
     <div class="pos-receipt">
         <div class="pos-header">
-            <h3>LABEL GADGET MANDOR</h3>
-            <p>Sistem Input Data & Checklist</p>
+            <div class="pos-title">LABEL ASET GADGET</div>
+            <div class="pos-subtitle">SISTEM INPUT DATA & CHECKLIST</div>
         </div>
-        <hr>
+        
+        <div class="pos-divider"></div>
+        
         <div class="pos-body">
             <table class="pos-table">
                 <tr>
-                    <td>Mandor</td>
-                    <td>: <span id="print-nama"></span></td>
+                    <td class="label">NAMA</td>
+                    <td class="value">: <span id="print-nama"></span></td>
                 </tr>
                 <tr>
-                    <td>NPK</td>
-                    <td>: <span id="print-npk"></span></td>
+                    <td class="label">NPK</td>
+                    <td class="value">: <span id="print-npk"></span></td>
                 </tr>
                 <tr>
-                    <td>Aplikasi</td>
-                    <td>: <span id="print-aplikasi"></span></td>
-                </tr>
-                <tr>
-                    <td>IMEI</td>
-                    <td class="pos-imei">: <span id="print-imei"></span></td>
+                    <td class="label">APLIKASI</td>
+                    <td class="value">: <span id="print-aplikasi"></span></td>
                 </tr>
             </table>
-            <div class="pos-barcode-placeholder">
-                <div id="print-imei-large"></div>
+            
+            <div class="pos-imei-section">
+                <div class="imei-label">NOMOR IMEI</div>
+                <div id="print-imei" class="imei-value"></div>
+            </div>
+
+            <div class="pos-qr-wrapper">
+                <img id="print-qr" src="" alt="QR Code IMEI">
             </div>
         </div>
-        <hr>
+        
+        <div class="pos-divider"></div>
+        
         <div class="pos-footer">
-            <p>Dicetak pada: <?= date('d/m/Y H:i') ?></p>
-            <p>Aset Perusahaan - Harap Dijaga</p>
+            <div>DICETAK: <?= date('d/m/Y H:i') ?> WIB</div>
+            <div class="footer-bold">MILIK PERUSAHAAN - JANGAN DIRUSAK</div>
         </div>
     </div>
 </div>
@@ -191,32 +197,120 @@
 <style>
 /* === POS 80mm Print Media === */
 @media print {
+    /* Hide everything else */
     body > *:not(#posPrintArea) { display: none !important; }
+    
     #posPrintArea { 
         display: block !important; 
         width: 80mm; 
         margin: 0;
         padding: 0;
+        background: #fff;
     }
+
     .pos-receipt {
-        width: 72mm; /* safe margin for 80mm paper */
+        width: 74mm; /* safe margin for 80mm paper */
         margin: 0 auto;
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 10pt;
-        line-height: 1.2;
+        padding: 5mm 0;
+        font-family: 'Arial', sans-serif;
+        color: #000;
     }
-    .pos-header { text-align: center; margin-bottom: 5px; }
-    .pos-header h3 { margin: 0; font-size: 12pt; }
-    .pos-header p { margin: 0; font-size: 8pt; }
-    .pos-body { margin: 10px 0; }
-    .pos-table { width: 100%; border-collapse: collapse; }
-    .pos-table td { vertical-align: top; padding: 2px 0; }
-    .pos-table td:first-child { width: 30%; }
-    .pos-imei { font-weight: bold; font-size: 11pt; }
-    .pos-barcode-placeholder { text-align: center; margin-top: 15px; border: 1px dashed #ccc; padding: 10px; }
-    #print-imei-large { font-size: 14pt; font-weight: bold; letter-spacing: 2px; }
-    .pos-footer { text-align: center; font-size: 7pt; margin-top: 10px; }
-    hr { border: 0; border-top: 1px dashed #000; margin: 5px 0; }
+
+    .pos-header {
+        text-align: center;
+        margin-bottom: 8px;
+    }
+
+    .pos-title {
+        font-size: 14pt;
+        font-weight: 900;
+        letter-spacing: 1px;
+        margin-bottom: 2px;
+    }
+
+    .pos-subtitle {
+        font-size: 8pt;
+        font-weight: normal;
+        text-transform: uppercase;
+    }
+
+    .pos-divider {
+        border-top: 2px dashed #000;
+        margin: 10px 0;
+        width: 100%;
+    }
+
+    .pos-body {
+        margin: 10px 0;
+    }
+
+    .pos-table {
+        width: 100%;
+        margin-bottom: 12px;
+    }
+
+    .pos-table td {
+        font-size: 10pt;
+        padding: 3px 0;
+        vertical-align: top;
+    }
+
+    .pos-table td.label {
+        width: 25%;
+        font-weight: bold;
+    }
+
+    .pos-table td.value {
+        width: 75%;
+        font-weight: normal;
+    }
+
+    .pos-imei-section {
+        text-align: center;
+        background: #000;
+        color: #fff;
+        padding: 8px 0;
+        margin: 15px 0;
+        border-radius: 4px;
+        -webkit-print-color-adjust: exact;
+    }
+
+    .imei-label {
+        font-size: 8pt;
+        font-weight: normal;
+        margin-bottom: 2px;
+    }
+
+    .imei-value {
+        font-size: 16pt;
+        font-weight: 900;
+        letter-spacing: 1.5px;
+        font-family: 'Courier New', Courier, monospace;
+    }
+
+    .pos-qr-wrapper {
+        text-align: center;
+        margin: 15px 0;
+    }
+
+    .pos-qr-wrapper img {
+        width: 35mm;
+        height: 35mm;
+    }
+
+    .pos-footer {
+        text-align: center;
+        font-size: 8pt;
+        line-height: 1.4;
+    }
+
+    .footer-bold {
+        font-weight: bold;
+        margin-top: 4px;
+        border: 1px solid #000;
+        display: inline-block;
+        padding: 2px 8px;
+    }
 }
 
 @media screen {
@@ -265,10 +359,20 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('print-npk').textContent = npk;
             document.getElementById('print-aplikasi').textContent = aplikasi || '-';
             document.getElementById('print-imei').textContent = imei;
-            document.getElementById('print-imei-large').textContent = imei;
+            
+            // Generate QR Code via Google Charts API
+            const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${imei}&choe=UTF-8`;
+            document.getElementById('print-qr').src = qrUrl;
 
-            // Trigger browser print
-            window.print();
+            // Wait for image to load before printing
+            document.getElementById('print-qr').onload = function() {
+                window.print();
+            };
+            
+            // Fallback for print if image takes too long
+            setTimeout(() => {
+                window.print();
+            }, 1000);
         });
     });
 });
