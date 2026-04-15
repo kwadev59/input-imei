@@ -15,6 +15,7 @@ $menu_groups = [
         'items' => [
             'buat_pengiriman'=> ['icon' => 'bi-truck',  'label' => 'Kirim Gadget', 'url' => 'pengiriman-gadget/draft'],
             'pengiriman_gadget' => ['icon' => 'bi-clock-history', 'label' => 'History Pengiriman', 'url' => 'pengiriman-gadget'],
+            'detail_pengiriman' => ['icon' => 'bi-list-check', 'label' => 'Detail Pengiriman', 'url' => 'pengiriman-gadget/detail-all'],
             'rekon_gadget'=> ['icon' => 'bi-arrow-left-right',  'label' => 'Rekon Gadget', 'url' => 'rekon-gadget'],
         ]
     ],

@@ -35,6 +35,40 @@ class PengirimanGadget extends BaseController
     }
 
     /**
+     * Detail All - List all shipped IMEI across all BASTEs
+     */
+    public function detailAll()
+    {
+        $items = $this->itemsModel->getAllShippedItems();
+        $totalBastes = count(array_unique(array_column($items, 'baste_id')));
+
+        $data = [
+            'active_menu' => 'detail_pengiriman',
+            'items' => $items,
+            'total_bastes' => $totalBastes
+        ];
+
+        return view('pengiriman_gadget/detail_all', $data);
+    }
+
+    /**
+     * Export Detail Pengiriman to Excel
+     */
+    public function exportDetail()
+    {
+        $items = $this->itemsModel->getAllShippedItems();
+
+        $filename = 'Detail_Pengiriman_BASTE_' . date('Ymd_His') . '.xls';
+
+        header("Content-Type: application/vnd.ms-excel");
+        header("Content-Disposition: attachment; filename=\"{$filename}\"");
+        header("Pragma: no-cache");
+        header("Expires: 0");
+
+        return view('pengiriman_gadget/export_detail_excel', ['items' => $items]);
+    }
+
+    /**
      * Draft View to input Gadget Pengiriman
      */
     public function draft()
@@ -416,5 +450,134 @@ class PengirimanGadget extends BaseController
          $this->itemsModel->delete($id);
 
          return redirect()->to('pengiriman-gadget/detail/' . $baste_id)->with('success', 'Item berhasil dihapus dari BASTE.');
+     }
+
+     /**
+      * View Upload Resi Form
+      */
+     public function uploadResi($id)
+     {
+         $baste = $this->basteModel->find($id);
+         if (!$baste) {
+             return redirect()->to('pengiriman-gadget')->with('error', 'BASTE tidak ditemukan.');
+         }
+
+         $data = [
+             'active_menu' => 'pengiriman_gadget',
+             'baste' => $baste
+         ];
+
+         return view('pengiriman_gadget/upload_resi', $data);
+     }
+
+     /**
+      * Action to Upload Resi
+      */
+     public function doUploadResi($id)
+     {
+         $isAjax = $this->request->isAJAX() || 
+                   $this->request->getHeaderLine('X-Requested-With') === 'XMLHttpRequest';
+
+         $baste = $this->basteModel->find($id);
+         if (!$baste) {
+             if ($isAjax) {
+                 return $this->response->setJSON(['status' => 'error', 'message' => 'BASTE tidak ditemukan.']);
+             }
+             return redirect()->to('pengiriman-gadget')->with('error', 'BASTE tidak ditemukan.');
+         }
+
+         $no_resi = $this->request->getPost('no_resi');
+         $file = $this->request->getFile('foto_resi');
+
+         // Validate no_resi
+         if (empty($no_resi)) {
+             if ($isAjax) {
+                 return $this->response->setJSON(['status' => 'error', 'message' => 'Nomor resi harus diisi.']);
+             }
+             return redirect()->back()->with('error', 'Nomor resi harus diisi.');
+         }
+
+         // Validate file
+         if (!$file || !$file->isValid()) {
+             if ($isAjax) {
+                 return $this->response->setJSON(['status' => 'error', 'message' => 'File resi harus diupload.']);
+             }
+             return redirect()->back()->with('error', 'File resi harus diupload.');
+         }
+
+         // Validate file type
+         if ($file->getClientMimeType() !== 'application/pdf') {
+             if ($isAjax) {
+                 return $this->response->setJSON(['status' => 'error', 'message' => 'File harus dalam format PDF.']);
+             }
+             return redirect()->back()->with('error', 'File harus dalam format PDF.');
+         }
+
+         // Validate file size (max 5MB)
+         if ($file->getSize() > 5 * 1024 * 1024) {
+             if ($isAjax) {
+                 return $this->response->setJSON(['status' => 'error', 'message' => 'File terlalu besar! Maksimal 5MB.']);
+             }
+             return redirect()->back()->with('error', 'File terlalu besar! Maksimal 5MB.');
+         }
+
+         $updateData = [
+             'no_resi' => $no_resi
+         ];
+
+         if (!$file->hasMoved()) {
+             // Create directory if not exists
+             $uploadPath = ROOTPATH . 'public/uploads/resi/';
+             if (!is_dir($uploadPath)) {
+                 mkdir($uploadPath, 0777, true);
+             }
+
+             $newName = $file->getRandomName();
+             if ($file->move($uploadPath, $newName)) {
+                 $updateData['foto_resi'] = $newName;
+                 
+                 // Delete old file if exists
+                 if (!empty($baste['foto_resi']) && file_exists($uploadPath . $baste['foto_resi'])) {
+                     @unlink($uploadPath . $baste['foto_resi']);
+                 }
+             } else {
+                 if ($isAjax) {
+                     return $this->response->setJSON(['status' => 'error', 'message' => 'Gagal menyimpan file. Silakan coba lagi.']);
+                 }
+                 return redirect()->back()->with('error', 'Gagal menyimpan file. Silakan coba lagi.');
+             }
+         }
+
+         $this->basteModel->update($id, $updateData);
+
+         if ($isAjax) {
+             return $this->response->setJSON(['status' => 'success', 'message' => 'Resi berhasil diupload.']);
+         }
+         return redirect()->to('pengiriman-gadget')->with('success', 'Resi berhasil diperbarui.');
+     }
+
+     /**
+      * Serve resi file with proper headers for inline viewing
+      */
+     public function viewResiFile($id)
+     {
+         $baste = $this->basteModel->find($id);
+         if (!$baste || empty($baste['foto_resi'])) {
+             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File resi tidak ditemukan.');
+         }
+
+         $filePath = ROOTPATH . 'public/uploads/resi/' . $baste['foto_resi'];
+         if (!file_exists($filePath)) {
+             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound('File resi tidak ditemukan di server.');
+         }
+
+         $mimeType = mime_content_type($filePath) ?: 'application/octet-stream';
+         $fileName = $baste['foto_resi'];
+
+         return $this->response
+             ->setContentType($mimeType)
+             ->setHeader('Content-Disposition', 'inline; filename="' . $fileName . '"')
+             ->setHeader('Cache-Control', 'public, max-age=86400')
+             ->setBody(file_get_contents($filePath));
      }
 }

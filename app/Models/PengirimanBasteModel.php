@@ -7,7 +7,7 @@ class PengirimanBasteModel extends Model
 {
     protected $table = 'pengiriman_baste';
     protected $primaryKey = 'id';
-    protected $allowedFields = ['no_baste', 'tanggal', 'created_by', 'created_at', 'updated_at'];
+    protected $allowedFields = ['no_baste', 'tanggal', 'no_resi', 'foto_resi', 'created_by', 'created_at', 'updated_at'];
     protected $useTimestamps = true;
     
     public function generateNoBaste()

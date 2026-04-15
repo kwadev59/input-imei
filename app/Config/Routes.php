@@ -78,6 +78,8 @@ $routes->post('/input/update/(:num)', 'Input::update/$1'); // Update Draft
 
 // Pengiriman Gadget
 $routes->get('/pengiriman-gadget', 'PengirimanGadget::index');
+$routes->get('/pengiriman-gadget/detail-all', 'PengirimanGadget::detailAll');
+$routes->get('/pengiriman-gadget/export-detail', 'PengirimanGadget::exportDetail');
 $routes->get('/pengiriman-gadget/draft', 'PengirimanGadget::draft');
 $routes->post('/pengiriman-gadget/check-imei', 'PengirimanGadget::checkImei');
 $routes->post('/pengiriman-gadget/save-draft', 'PengirimanGadget::saveDraft');
@@ -93,6 +95,9 @@ $routes->get('/pengiriman-gadget/print/(:num)', 'PengirimanGadget::printPdf/$1')
 $routes->get('/pengiriman-gadget/edit-item/(:num)', 'PengirimanGadget::editItem/$1');
 $routes->post('/pengiriman-gadget/update-item/(:num)', 'PengirimanGadget::updateItem/$1');
 $routes->post('/pengiriman-gadget/delete-item/(:num)', 'PengirimanGadget::deleteItem/$1');
+$routes->get('/pengiriman-gadget/upload-resi/(:num)', 'PengirimanGadget::uploadResi/$1');
+$routes->post('/pengiriman-gadget/do-upload-resi/(:num)', 'PengirimanGadget::doUploadResi/$1');
+$routes->get('/pengiriman-gadget/view-resi-file/(:num)', 'PengirimanGadget::viewResiFile/$1');
 
 // =====================================================
 // API Print Queue (ESC/POS via Bash Agent)
