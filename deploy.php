@@ -18,7 +18,8 @@ set('shared_dirs', ['writable/uploads', 'writable/logs', 'writable/cache', 'publ
 
 // Writable dirs by web server 
 set('writable_dirs', ['writable', 'public/uploads']);
-set('writable_mode', 'chmod'); // Tambahkan ini
+set('writable_mode', 'chmod');
+set('http_user', 'www-data'); // Tambahkan ini
 
 // Hosts
 host('103.191.63.191')
@@ -33,6 +34,10 @@ task('deploy:migrate', function () {
 task('deploy:restart_services', function () {
     run('echo "?passw0rdA" | sudo -S systemctl restart php8.2-fpm');
     run('echo "?passw0rdA" | sudo -S systemctl restart nginx');
+});
+
+task('deploy:chown', function () {
+    run('chown -R www-data:www-data {{deploy_path}}');
 });
 
 // Main Deploy Task for Deployer 6.x
@@ -50,6 +55,7 @@ task('deploy', [
     'deploy:clear_paths',
     'deploy:symlink',
     'deploy:unlock',
+    'deploy:chown',
     'deploy:restart_services',
     'cleanup',
     'success'
