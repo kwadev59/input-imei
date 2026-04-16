@@ -22,8 +22,12 @@ jobs:
           port: 22
           script: |
             cd /var/www/input-imei
-            git pull origin main
+            git fetch --all
+            git reset --hard origin/main
             composer install --no-interaction --no-dev --optimize-autoloader
             php spark migrate --all
             php spark cache:clear
-            echo "?passw0rdA" | sudo -S systemctl restart php8.2-fpm
+            # Restart services (menggunakan password dari secrets jika sudo butuh password)
+            echo "${{ secrets.PROD_PASSWORD }}" | sudo -S systemctl restart php8.2-fpm
+            echo "${{ secrets.PROD_PASSWORD }}" | sudo -S systemctl restart nginx
+
