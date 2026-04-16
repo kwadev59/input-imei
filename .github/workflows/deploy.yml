@@ -21,13 +21,27 @@ jobs:
           password: ${{ secrets.PROD_PASSWORD }}
           port: 22
           script: |
+            set -e
+            echo "--- Memulai Deployment ---"
             cd /var/www/input-imei
-            git fetch --all
+            
+            echo "--- Mengambil Kode Terbaru dari GitHub ---"
+            git fetch origin main
             git reset --hard origin/main
+            
+            echo "--- Update Dependencies ---"
             composer install --no-interaction --no-dev --optimize-autoloader
+            
+            echo "--- Menjalankan Migrasi Database ---"
             php spark migrate --all
+            
+            echo "--- Membersihkan Cache ---"
             php spark cache:clear
-            # Restart services (menggunakan password dari secrets jika sudo butuh password)
+            
+            echo "--- Restart Services ---"
             echo "${{ secrets.PROD_PASSWORD }}" | sudo -S systemctl restart php8.2-fpm
             echo "${{ secrets.PROD_PASSWORD }}" | sudo -S systemctl restart nginx
+            
+            echo "--- Deployment Selesai dengan Sukses! ---"
+
 
