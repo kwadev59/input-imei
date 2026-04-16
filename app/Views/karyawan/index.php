@@ -100,9 +100,11 @@
                             </td>
                             <td>
                                 <div class="btn-group btn-group-sm">
-                                    <a href="<?= base_url('karyawan/edit/'.$row['id']) ?>" class="btn btn-outline-secondary" title="Edit">
-                                        <i class="bi bi-pencil"></i>
-                                    </a>
+                                    <button type="button" class="btn btn-outline-primary mutasi-btn" 
+                                            data-id="<?= $row['id'] ?>" 
+                                            title="Edit & Mutasi">
+                                        <i class="bi bi-pencil-square"></i> Mutasi
+                                    </button>
                                     <a href="<?= base_url('karyawan/riwayat/'.$row['id']) ?>" class="btn btn-outline-info" title="Riwayat">
                                         <i class="bi bi-clock-history"></i>
                                     </a>
@@ -119,5 +121,130 @@
         <?php endif; ?>
     </div>
 </div>
+
+<!-- Modal Edit & Mutasi Karyawan -->
+<div class="modal fade" id="mutasiModal" tabindex="-1" aria-labelledby="mutasiModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="mutasiModalLabel"><i class="bi bi-pencil-square me-2"></i>Edit & Mutasi Karyawan</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="mutasiForm" action="" method="post">
+                <?= csrf_field() ?>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">NIK Karyawan</label>
+                            <input type="text" name="nik_karyawan" id="m_nik" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Nama Lengkap</label>
+                            <input type="text" name="nama" id="m_nama" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Jabatan</label>
+                            <input type="text" name="jabatan" id="m_jabatan" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Status Aktif</label>
+                            <select name="status_aktif" id="m_status" class="form-select">
+                                <option value="Aktif">Aktif</option>
+                                <option value="Tidak Aktif">Tidak Aktif</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">PT / SITE</label>
+                            <input type="text" name="pt_site" id="m_pt" class="form-control">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label fw-bold small">Afdeling</label>
+                            <input type="text" name="afdeling" id="m_afd" class="form-control">
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="bg-light p-3 rounded border">
+                        <div class="form-check form-switch mb-2">
+                            <input class="form-check-input" type="checkbox" name="is_mutation" id="isMutation" value="1">
+                            <label class="form-check-label fw-bold text-primary" for="isMutation">Aktifkan Mode Mutasi</label>
+                        </div>
+                        <div id="mutationNoteArea" style="display:none;">
+                            <label class="form-label small fw-bold">Keterangan Mutasi / Perubahan</label>
+                            <textarea name="keterangan_mutasi" class="form-control" rows="2" placeholder="Contoh: Mutasi dari AFD A ke AFD B atau promosi jabatan..."></textarea>
+                            <div class="form-text text-danger small"><i class="bi bi-info-circle me-1"></i> Mengaktifkan mode mutasi akan mencatat keterangan ini secara khusus ke riwayat karyawan.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-floppy me-1"></i> Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const mutasiModal = new bootstrap.Modal(document.getElementById('mutasiModal'));
+    const mutasiForm = document.getElementById('mutasiForm');
+    const isMutationCheck = document.getElementById('isMutation');
+    const mutationNoteArea = document.getElementById('mutationNoteArea');
+
+    // Toggle Mutation Note
+    isMutationCheck.addEventListener('change', function() {
+        mutationNoteArea.style.display = this.checked ? 'block' : 'none';
+    });
+
+    // Click Mutasi Button
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('mutasi-btn') || e.target.closest('.mutasi-btn')) {
+            const btn = e.target.classList.contains('mutasi-btn') ? e.target : e.target.closest('.mutasi-btn');
+            const id = btn.getAttribute('data-id');
+            
+            // Show loading state or something if needed
+            btn.disabled = true;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+            fetch('<?= base_url('karyawan/ajax-detail') ?>/' + id)
+                .then(r => r.json())
+                .then(res => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+
+                    if (res.status === 'success') {
+                        const d = res.data;
+                        document.getElementById('m_nik').value = d.nik_karyawan;
+                        document.getElementById('m_nama').value = d.nama;
+                        document.getElementById('m_jabatan').value = d.jabatan;
+                        document.getElementById('m_status').value = d.status_aktif;
+                        document.getElementById('m_pt').value = d.pt_site || '';
+                        document.getElementById('m_afd').value = d.afdeling || '';
+                        
+                        // Reset mutation mode
+                        isMutationCheck.checked = false;
+                        mutationNoteArea.style.display = 'none';
+                        mutasiForm.querySelector('textarea').value = '';
+
+                        // Set Action URL
+                        mutasiForm.action = '<?= base_url('karyawan/update-mutasi') ?>/' + id;
+                        
+                        mutasiModal.show();
+                    } else {
+                        alert('Gagal mengambil data: ' + res.message);
+                    }
+                })
+                .catch(err => {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    alert('Terjadi kesalahan jaringan.');
+                });
+        }
+    });
+});
+</script>
 
 <?= view('partials/admin_footer') ?>

@@ -39,6 +39,8 @@ $routes->post('/karyawan/store', 'Karyawan::store');
 $routes->get('/karyawan/export', 'Karyawan::export');
 $routes->get('/karyawan/edit/(:num)', 'Karyawan::edit/$1');
 $routes->get('/karyawan/riwayat/(:num)', 'Karyawan::riwayat/$1');
+$routes->get('/karyawan/ajax-detail/(:num)', 'Karyawan::ajaxDetail/$1');
+$routes->post('/karyawan/update-mutasi/(:num)', 'Karyawan::updateMutasi/$1');
 $routes->post('/karyawan/update/(:num)', 'Karyawan::update/$1');
 $routes->post('/karyawan/import', 'Karyawan::import');
 

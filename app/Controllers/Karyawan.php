@@ -264,4 +264,80 @@ class Karyawan extends Controller
         fclose($file);
         exit;
     }
+
+    /**
+     * AJAX Get Detail for Modal
+     */
+    public function ajaxDetail($id)
+    {
+        $session = session();
+        if(!$session->get('logged_in') || $session->get('role') != 'admin'){
+            return $this->response->setJSON(['status' => 'error', 'message' => 'Unauthorized']);
+        }
+
+        $karyawanModel = new KaryawanModel();
+        $data = $karyawanModel->find($id);
+
+        if ($data) {
+            return $this->response->setJSON(['status' => 'success', 'data' => $data]);
+        }
+        return $this->response->setJSON(['status' => 'error', 'message' => 'Data tidak ditemukan']);
+    }
+
+    /**
+     * Update & Mutasi via Modal
+     */
+    public function updateMutasi($id)
+    {
+        $session = session();
+        if(!$session->get('logged_in') || $session->get('role') != 'admin'){
+            return redirect()->to('/auth');
+        }
+
+        $karyawanModel = new KaryawanModel();
+        $exist = $karyawanModel->find($id);
+
+        if (!$exist) {
+            return redirect()->back()->with('error', 'Karyawan tidak ditemukan.');
+        }
+
+        $isMutation = $this->request->getPost('is_mutation') == '1';
+        
+        $data = [
+            'nama'         => $this->request->getPost('nama'),
+            'nik_karyawan' => $this->request->getPost('nik_karyawan'),
+            'jabatan'      => $this->request->getPost('jabatan'),
+            'afdeling'     => $this->request->getPost('afdeling'),
+            'pt_site'      => $this->request->getPost('pt_site'),
+            'status_aktif' => $this->request->getPost('status_aktif'),
+        ];
+
+        // Cek perubahan untuk riwayat
+        $isChanged = ($exist['nama'] != $data['nama']) ||
+                     ($exist['nik_karyawan'] != $data['nik_karyawan']) ||
+                     ($exist['jabatan'] != $data['jabatan']) ||
+                     ($exist['afdeling'] != $data['afdeling']) ||
+                     ($exist['pt_site'] != $data['pt_site']) ||
+                     ($exist['status_aktif'] != $data['status_aktif']);
+
+        if ($isChanged || $isMutation) {
+            $keterangan = $isMutation ? 'MUTASI: ' . $this->request->getPost('keterangan_mutasi') : 'Perubahan Data via Modal';
+            
+            $db = \Config\Database::connect();
+            $db->table('riwayat_karyawan')->insert([
+                'karyawan_id'  => $exist['id'],
+                'nik_karyawan' => $exist['nik_karyawan'],
+                'nama'         => $exist['nama'],
+                'jabatan'      => $exist['jabatan'],
+                'afdeling'     => $exist['afdeling'],
+                'pt_site'      => $exist['pt_site'],
+                'status_aktif' => $exist['status_aktif'],
+                'keterangan'   => $keterangan,
+                'created_at'   => date('Y-m-d H:i:s')
+            ]);
+        }
+
+        $karyawanModel->update($id, $data);
+        return redirect()->back()->with('success', 'Data karyawan berhasil diperbarui.');
+    }
 }
