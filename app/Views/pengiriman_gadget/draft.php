@@ -153,7 +153,7 @@
 .pst-none       { background: #f1f5f9; color: #64748b; }
 
 /* ---- POS Print Receipt (hidden, for print only) ---- */
-#posReceipt {
+#posReceipt, #posPrintArea {
     display: none;
 }
 
