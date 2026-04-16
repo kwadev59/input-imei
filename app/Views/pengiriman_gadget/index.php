@@ -67,8 +67,8 @@
                                                     title="Lihat Resi">
                                                 <i class="bi bi-file-earmark-pdf"></i> Lihat Resi
                                             </button>
-                                            <form action="<?= base_url('pengiriman-gadget/aksi-hapus-resi/'.$row['id']) ?>" method="get" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus resi ini? Nomor resi akan dihapus dan dapat digunakan kembali.')">
-                                                <button type="submit" class="btn btn-danger btn-sm" title="Hapus Resi">
+                                            <form action="<?= base_url('pengiriman-gadget/aksi-hapus-resi/'.$row['id']) ?>" method="get" class="d-inline form-hapus-resi">
+                                                <button type="button" class="btn btn-danger btn-sm btn-hapus-resi" title="Hapus Resi">
                                                     <i class="bi bi-trash"></i> HAPUS RESI
                                                 </button>
                                             </form>
@@ -206,6 +206,18 @@
                 }
             });
         }
+        
+        // ============================================================
+        // Robust Delete Resi Handler (Works even with DataTables)
+        // ============================================================
+        $(document).on('click', '.btn-hapus-resi', function(e) {
+            e.preventDefault();
+            const form = $(this).closest('form');
+            
+            if (confirm('Apakah Anda yakin ingin menghapus resi ini? Nomor resi akan dihapus dan dapat digunakan kembali.')) {
+                form.submit();
+            }
+        });
         
         // ============================================================
         // Upload Resi Modal Handler

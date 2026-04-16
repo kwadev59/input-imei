@@ -53,8 +53,8 @@
                             <td>:</td>
                             <td>
                                 <span class="badge bg-success border"><?= esc($baste['no_resi']) ?></span>
-                                <form action="<?= base_url('pengiriman-gadget/aksi-hapus-resi/'.$baste['id']) ?>" method="get" class="d-inline" onsubmit="return confirm('Hapus resi ini?')">
-                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2" title="Hapus Resi">
+                                <form action="<?= base_url('pengiriman-gadget/aksi-hapus-resi/'.$baste['id']) ?>" method="get" class="d-inline form-hapus-resi">
+                                    <button type="button" class="btn btn-link btn-sm text-danger p-0 ms-2 btn-hapus-resi" title="Hapus Resi">
                                         <i class="bi bi-trash"></i> Hapus Resi
                                     </button>
                                 </form>
@@ -118,5 +118,17 @@
     </div>
 
 </div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    $(document).on('click', '.btn-hapus-resi', function(e) {
+        e.preventDefault();
+        const form = $(this).closest('form');
+        if (confirm('Apakah Anda yakin ingin menghapus resi ini?')) {
+            form.submit();
+        }
+    });
+</script>
+
 <?= view('partials/admin_footer') ?>
 <!-- Refresh timestamp: Thu Apr 16 10:11:00 PM WITA 2026 -->
