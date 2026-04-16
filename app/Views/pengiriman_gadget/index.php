@@ -91,6 +91,27 @@
     </div>
 </div>
 
+<!-- Modal Konfirmasi Hapus Resi -->
+<div class="modal fade" id="deleteResiConfirmModal" tabindex="-1" aria-labelledby="deleteResiConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteResiConfirmModalLabel"><i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Hapus Resi</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <i class="bi bi-trash text-danger display-1 mb-3 d-block"></i>
+                <h5>Apakah Anda yakin ingin menghapus resi ini?</h5>
+                <p class="text-muted">Nomor resi akan dihapus dari sistem dan dapat digunakan kembali untuk pengiriman lain.</p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-danger px-4" id="confirmDeleteResiBtn">Ya, Hapus Resi</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Upload Resi -->
 <div class="modal fade" id="uploadResiModal" tabindex="-1" aria-labelledby="uploadResiModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
@@ -208,14 +229,20 @@
         }
         
         // ============================================================
-        // Robust Delete Resi Handler (Works even with DataTables)
+        // Robust Delete Resi Handler with Bootstrap Modal
         // ============================================================
+        let formToSubmit = null;
+        const deleteResiModal = new bootstrap.Modal(document.getElementById('deleteResiConfirmModal'));
+
         $(document).on('click', '.btn-hapus-resi', function(e) {
             e.preventDefault();
-            const form = $(this).closest('form');
-            
-            if (confirm('Apakah Anda yakin ingin menghapus resi ini? Nomor resi akan dihapus dan dapat digunakan kembali.')) {
-                form.submit();
+            formToSubmit = $(this).closest('form');
+            deleteResiModal.show();
+        });
+
+        document.getElementById('confirmDeleteResiBtn').addEventListener('click', function() {
+            if (formToSubmit) {
+                formToSubmit.submit();
             }
         });
         
