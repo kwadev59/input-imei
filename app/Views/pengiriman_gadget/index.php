@@ -67,6 +67,12 @@
                                                     title="Lihat Resi">
                                                 <i class="bi bi-file-earmark-pdf"></i> Lihat Resi
                                             </button>
+                                            <a href="<?= base_url('pengiriman-gadget/delete-resi/'.$row['id']) ?>" 
+                                               class="btn btn-outline-danger btn-sm" 
+                                               onclick="return confirm('Apakah Anda yakin ingin menghapus resi ini? Nomor resi akan dihapus dan dapat digunakan kembali.')"
+                                               title="Hapus Resi">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
                                         <?php endif; ?>
                                     </div>
                                     <?php if(!empty($row['no_resi'])): ?>
@@ -481,3 +487,4 @@
 </script>
 
 <?= view('partials/admin_footer') ?>
+<!-- Refresh timestamp: Thu Apr 16 10:11:00 PM WITA 2026 -->

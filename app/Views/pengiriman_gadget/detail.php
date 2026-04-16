@@ -47,6 +47,21 @@
                     <table class="table table-borderless table-sm mb-0">
                         <tr><td width="35%" class="text-muted fw-bold">Waktu Submit</td><td width="5%">:</td><td><?= date('d M Y, H:i:s', strtotime($baste['created_at'])) ?></td></tr>
                         <tr><td class="text-muted fw-bold">Total Gadget</td><td>:</td><td><span class="badge bg-primary px-3 fs-6 rounded-pill"><?= count($items) ?> unit</span></td></tr>
+                        <?php if(!empty($baste['no_resi'])): ?>
+                        <tr>
+                            <td class="text-muted fw-bold">No Resi</td>
+                            <td>:</td>
+                            <td>
+                                <span class="badge bg-success border"><?= esc($baste['no_resi']) ?></span>
+                                <a href="<?= base_url('pengiriman-gadget/delete-resi/'.$baste['id']) ?>" 
+                                   class="btn btn-link btn-sm text-danger p-0 ms-2" 
+                                   onclick="return confirm('Hapus resi ini?')"
+                                   title="Hapus Resi">
+                                    <i class="bi bi-trash"></i> Hapus Resi
+                                </a>
+                            </td>
+                        </tr>
+                        <?php endif; ?>
                     </table>
                 </div>
             </div>
@@ -105,3 +120,4 @@
 
 </div>
 <?= view('partials/admin_footer') ?>
+<!-- Refresh timestamp: Thu Apr 16 10:11:00 PM WITA 2026 -->

@@ -580,4 +580,28 @@ class PengirimanGadget extends BaseController
              ->setHeader('Cache-Control', 'public, max-age=86400')
              ->setBody(file_get_contents($filePath));
      }
+
+     /**
+      * Delete resi from BASTE so it can be reused
+      */
+     public function deleteResi($id)
+     {
+         $baste = $this->basteModel->find($id);
+         if (!$baste) {
+             return redirect()->to('pengiriman-gadget')->with('error', 'BASTE tidak ditemukan.');
+         }
+
+         $uploadPath = ROOTPATH . 'public/uploads/resi/';
+         if (!empty($baste['foto_resi']) && file_exists($uploadPath . $baste['foto_resi'])) {
+             @unlink($uploadPath . $baste['foto_resi']);
+         }
+
+         $this->basteModel->update($id, [
+             'no_resi' => null,
+             'foto_resi' => null
+         ]);
+
+         return redirect()->to('pengiriman-gadget')->with('success', 'Resi berhasil dihapus. Nomor resi kini dapat digunakan kembali.');
+     }
 }
+// Refresh timestamp: Thu Apr 16 10:11:00 PM WITA 2026
