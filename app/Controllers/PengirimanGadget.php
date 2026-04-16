@@ -584,7 +584,7 @@ class PengirimanGadget extends BaseController
      /**
       * Delete resi from BASTE so it can be reused
       */
-     public function deleteResi($id)
+     public function hapusResi($id)
      {
          $baste = $this->basteModel->find($id);
          if (!$baste) {

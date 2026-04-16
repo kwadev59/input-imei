@@ -53,7 +53,7 @@
                             <td>:</td>
                             <td>
                                 <span class="badge bg-success border"><?= esc($baste['no_resi']) ?></span>
-                                <a href="<?= base_url('pengiriman-gadget/delete-resi/'.$baste['id']) ?>" 
+                                <a href="<?= base_url('pengiriman-gadget/aksi-hapus-resi/'.$baste['id']) ?>" 
                                    class="btn btn-link btn-sm text-danger p-0 ms-2" 
                                    onclick="return confirm('Hapus resi ini?')"
                                    title="Hapus Resi">

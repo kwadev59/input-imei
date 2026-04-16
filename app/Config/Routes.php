@@ -98,7 +98,7 @@ $routes->post('/pengiriman-gadget/delete-item/(:num)', 'PengirimanGadget::delete
 $routes->get('/pengiriman-gadget/upload-resi/(:num)', 'PengirimanGadget::uploadResi/$1');
 $routes->post('/pengiriman-gadget/do-upload-resi/(:num)', 'PengirimanGadget::doUploadResi/$1');
 $routes->get('/pengiriman-gadget/view-resi-file/(:num)', 'PengirimanGadget::viewResiFile/$1');
-$routes->get('/pengiriman-gadget/delete-resi/(:num)', 'PengirimanGadget::deleteResi/$1');
+$routes->get('/pengiriman-gadget/aksi-hapus-resi/(:num)', 'PengirimanGadget::hapusResi/$1');
 
 // =====================================================
 // API Print Queue (ESC/POS via Bash Agent)
