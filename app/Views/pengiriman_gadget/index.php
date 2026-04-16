@@ -229,15 +229,19 @@
         }
         
         // ============================================================
-        // Robust Delete Resi Handler with Bootstrap Modal
+        // Robust Delete Resi Handler with Bootstrap Modal (Vanilla JS)
         // ============================================================
         let formToSubmit = null;
-        const deleteResiModal = new bootstrap.Modal(document.getElementById('deleteResiConfirmModal'));
+        const deleteResiModalEl = document.getElementById('deleteResiConfirmModal');
+        const deleteResiModal = new bootstrap.Modal(deleteResiModalEl);
 
-        $(document).on('click', '.btn-hapus-resi', function(e) {
-            e.preventDefault();
-            formToSubmit = $(this).closest('form');
-            deleteResiModal.show();
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-hapus-resi') || e.target.closest('.btn-hapus-resi')) {
+                e.preventDefault();
+                const btn = e.target.classList.contains('btn-hapus-resi') ? e.target : e.target.closest('.btn-hapus-resi');
+                formToSubmit = btn.closest('form');
+                deleteResiModal.show();
+            }
         });
 
         document.getElementById('confirmDeleteResiBtn').addEventListener('click', function() {

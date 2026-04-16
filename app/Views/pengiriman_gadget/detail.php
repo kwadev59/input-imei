@@ -140,21 +140,26 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-    let formToSubmit = null;
-    const deleteResiModal = new bootstrap.Modal(document.getElementById('deleteResiConfirmModal'));
+    document.addEventListener('DOMContentLoaded', function() {
+        let formToSubmit = null;
+        const deleteResiModalEl = document.getElementById('deleteResiConfirmModal');
+        const deleteResiModal = new bootstrap.Modal(deleteResiModalEl);
 
-    $(document).on('click', '.btn-hapus-resi', function(e) {
-        e.preventDefault();
-        formToSubmit = $(this).closest('form');
-        deleteResiModal.show();
-    });
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-hapus-resi') || e.target.closest('.btn-hapus-resi')) {
+                e.preventDefault();
+                const btn = e.target.classList.contains('btn-hapus-resi') ? e.target : e.target.closest('.btn-hapus-resi');
+                formToSubmit = btn.closest('form');
+                deleteResiModal.show();
+            }
+        });
 
-    document.getElementById('confirmDeleteResiBtn').addEventListener('click', function() {
-        if (formToSubmit) {
-            formToSubmit.submit();
-        }
+        document.getElementById('confirmDeleteResiBtn').addEventListener('click', function() {
+            if (formToSubmit) {
+                formToSubmit.submit();
+            }
+        });
     });
 </script>
 
