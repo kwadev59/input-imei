@@ -53,12 +53,11 @@
                             <td>:</td>
                             <td>
                                 <span class="badge bg-success border"><?= esc($baste['no_resi']) ?></span>
-                                <a href="<?= base_url('pengiriman-gadget/aksi-hapus-resi/'.$baste['id']) ?>" 
-                                   class="btn btn-link btn-sm text-danger p-0 ms-2" 
-                                   onclick="return confirm('Hapus resi ini?')"
-                                   title="Hapus Resi">
-                                    <i class="bi bi-trash"></i> Hapus Resi
-                                </a>
+                                <form action="<?= base_url('pengiriman-gadget/aksi-hapus-resi/'.$baste['id']) ?>" method="get" class="d-inline" onsubmit="return confirm('Hapus resi ini?')">
+                                    <button type="submit" class="btn btn-link btn-sm text-danger p-0 ms-2" title="Hapus Resi">
+                                        <i class="bi bi-trash"></i> Hapus Resi
+                                    </button>
+                                </form>
                             </td>
                         </tr>
                         <?php endif; ?>

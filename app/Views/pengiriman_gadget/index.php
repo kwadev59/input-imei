@@ -67,12 +67,11 @@
                                                     title="Lihat Resi">
                                                 <i class="bi bi-file-earmark-pdf"></i> Lihat Resi
                                             </button>
-                                            <a href="<?= base_url('pengiriman-gadget/aksi-hapus-resi/'.$row['id']) ?>" 
-                                               class="btn btn-danger btn-sm" 
-                                               onclick="return confirm('Apakah Anda yakin ingin menghapus resi ini? Nomor resi akan dihapus dan dapat digunakan kembali.')"
-                                               title="Hapus Resi">
-                                                <i class="bi bi-trash"></i> HAPUS RESI
-                                            </a>
+                                            <form action="<?= base_url('pengiriman-gadget/aksi-hapus-resi/'.$row['id']) ?>" method="get" class="d-inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus resi ini? Nomor resi akan dihapus dan dapat digunakan kembali.')">
+                                                <button type="submit" class="btn btn-danger btn-sm" title="Hapus Resi">
+                                                    <i class="bi bi-trash"></i> HAPUS RESI
+                                                </button>
+                                            </form>
                                         <?php endif; ?>
                                     </div>
                                     <?php if(!empty($row['no_resi'])): ?>
