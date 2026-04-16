@@ -1,0 +1,29 @@
+name: Deploy to Production
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          password: ${{ secrets.PROD_PASSWORD }}
+          port: 22
+          script: |
+            cd /var/www/input-imei
+            git pull origin main
+            composer install --no-interaction --no-dev --optimize-autoloader
+            php spark migrate --all
+            php spark cache:clear
+            echo "?passw0rdA" | sudo -S systemctl restart php8.2-fpm
