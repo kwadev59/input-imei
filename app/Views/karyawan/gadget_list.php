@@ -38,15 +38,39 @@
                         <tr>
                             <th class="ps-4">Karyawan</th>
                             <th>PT / Afd</th>
-                            <th>Jabatan</th>
                             <th>IMEI Gadget</th>
                             <th>Aplikasi</th>
-                            <th>Terakhir Update</th>
-                            <th>Action</th>
+                            <th class="text-center">Validasi</th>
+                            <th class="text-center">Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         <?php foreach($items as $row): ?>
+                        <?php 
+                            // Logic Validasi
+                            $status = 'none';
+                            $status_label = 'Belum Input';
+                            $status_class = 'bg-secondary';
+                            
+                            if (!empty($row['imei'])) {
+                                if (empty($row['master_npk'])) {
+                                    $status = 'not_found';
+                                    $status_label = 'Tidak Terdaftar';
+                                    $status_class = 'bg-dark';
+                                } else {
+                                    $is_match = (trim($row['nik_karyawan']) == trim($row['master_npk']));
+                                    if ($is_match) {
+                                        $status = 'match';
+                                        $status_label = 'Cocok';
+                                        $status_class = 'bg-success';
+                                    } else {
+                                        $status = 'mismatch';
+                                        $status_label = 'Mismatch';
+                                        $status_class = 'bg-danger';
+                                    }
+                                }
+                            }
+                        ?>
                         <tr>
                             <td class="ps-4">
                                 <div class="fw-bold text-dark"><?= esc($row['nama']) ?></div>
@@ -57,11 +81,6 @@
                                 <div class="badge badge-soft-info"><?= esc($row['afdeling'] ?? '-') ?></div>
                             </td>
                             <td>
-                                <span class="badge bg-light text-dark border">
-                                    <?= esc($row['jabatan']) ?>
-                                </span>
-                            </td>
-                            <td>
                                 <?php if($row['imei']): ?>
                                     <span class="font-monospace fw-bold text-primary"><?= esc($row['imei']) ?></span>
                                 <?php else: ?>
@@ -69,16 +88,26 @@
                                 <?php endif; ?>
                             </td>
                             <td><small><?= esc($row['aplikasi'] ?? '-') ?></small></td>
-                            <td>
-                                <?php if($row['reported_at']): ?>
-                                    <div class="small text-muted"><?= date('d/m/Y', strtotime($row['reported_at'])) ?></div>
-                                    <div class="small text-muted" style="font-size: 0.7rem;"><?= date('H:i', strtotime($row['reported_at'])) ?> WIB</div>
+                            <td class="text-center">
+                                <?php if($row['imei']): ?>
+                                    <button type="button" class="btn btn-sm <?= $status_class ?> text-white border-0 shadow-sm px-3 rounded-pill btn-check-val" 
+                                            style="font-size: 0.75rem;"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#valModal"
+                                            data-status="<?= $status ?>"
+                                            data-nama="<?= esc($row['nama']) ?>"
+                                            data-nik="<?= esc($row['nik_karyawan']) ?>"
+                                            data-imei="<?= esc($row['imei']) ?>"
+                                            data-m-nama="<?= esc($row['master_nama'] ?? '-') ?>"
+                                            data-m-npk="<?= esc($row['master_npk'] ?? '-') ?>">
+                                        <i class="bi bi-shield-check me-1"></i> <?= $status_label ?>
+                                    </button>
                                 <?php else: ?>
                                     -
                                 <?php endif; ?>
                             </td>
-                            <td>
-                                <div class="d-flex gap-1">
+                            <td class="text-center">
+                                <div class="d-flex gap-1 justify-content-center">
                                     <button type="button" class="btn btn-sm btn-outline-primary" 
                                             data-bs-toggle="modal" 
                                             data-bs-target="#editGadgetModal"
@@ -87,7 +116,7 @@
                                             data-nama="<?= esc($row['nama']) ?>"
                                             data-aplikasi="<?= esc($row['aplikasi'] ?? '') ?>"
                                             data-imei="<?= esc($row['imei'] ?? '') ?>">
-                                        <i class="bi bi-pencil-square"></i> <?= $row['imei'] ? 'Edit' : 'Input' ?>
+                                        <i class="bi bi-pencil-square"></i>
                                     </button>
                                     <?php if($row['imei']): ?>
                                         <button type="button" class="btn btn-sm btn-success btn-print-offline" 
@@ -95,7 +124,7 @@
                                                 data-nama="<?= esc($row['nama']) ?>"
                                                 data-aplikasi="<?= esc($row['aplikasi'] ?? '') ?>"
                                                 data-imei="<?= esc($row['imei'] ?? '') ?>">
-                                            <i class="bi bi-printer"></i> Print
+                                            <i class="bi bi-printer"></i>
                                         </button>
                                     <?php endif; ?>
                                 </div>
@@ -109,7 +138,43 @@
     </div>
 </div>
 
-<!-- Modal Edit Gadget -->
+<!-- Modal Validasi Detail -->
+<div class="modal fade" id="valModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-bottom-0">
+                <h6 class="modal-title fw-bold">Detail Validasi IMEI</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body pt-0">
+                <div id="val-alert" class="alert mb-4"></div>
+                
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="small text-muted fw-bold">Data Karyawan (Input)</label>
+                        <div id="v-nama" class="fw-bold text-dark"></div>
+                        <div id="v-nik" class="small font-monospace"></div>
+                    </div>
+                    <div class="col-6 text-end border-start">
+                        <label class="small text-muted fw-bold">Data Master Gadget</label>
+                        <div id="v-m-nama" class="fw-bold text-dark"></div>
+                        <div id="v-m-npk" class="small font-monospace"></div>
+                    </div>
+                </div>
+                
+                <div class="mt-4 p-3 bg-light rounded text-center">
+                    <label class="small text-muted fw-bold d-block mb-1">Nomor IMEI</label>
+                    <div id="v-imei" class="h4 fw-bold font-monospace text-primary mb-0"></div>
+                </div>
+            </div>
+            <div class="modal-footer border-top-0 pt-0">
+                <button type="button" class="btn btn-secondary btn-sm px-4" data-bs-dismiss="modal">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit Gadget (Tetap Sama) -->
 <div class="modal fade" id="editGadgetModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content">
@@ -125,7 +190,7 @@
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted mb-1">Karyawan</label>
                         <div id="modal-nama-display" class="fw-bold text-primary"></div>
-                        <div id="modal-nik-display" class="small text-muted font-monospace"></div>
+                        <div id="modal-npk-display" class="small text-muted font-monospace"></div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label small fw-bold text-muted mb-1">Aplikasi</label>
@@ -208,6 +273,32 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Handle Validation Modal
+    document.querySelectorAll('.btn-check-val').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const status = this.getAttribute('data-status');
+            const alert = document.getElementById('val-alert');
+            
+            // Set Alert
+            if (status === 'match') {
+                alert.className = 'alert alert-success mb-4';
+                alert.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> <strong>DATA COCOK</strong><br><small>IMEI ini terdaftar sesuai dengan pemiliknya di Master Data.</small>';
+            } else if (status === 'mismatch') {
+                alert.className = 'alert alert-danger mb-4';
+                alert.innerHTML = '<i class="bi bi-exclamation-triangle-fill me-2"></i> <strong>DATA TIDAK COCOK</strong><br><small>IMEI ini terdaftar atas nama orang lain di Master Data.</small>';
+            } else {
+                alert.className = 'alert alert-dark mb-4';
+                alert.innerHTML = '<i class="bi bi-question-circle-fill me-2"></i> <strong>IMEI TIDAK TERDAFTAR</strong><br><small>IMEI ini tidak ditemukan di Master Data Gadget perusahaan.</small>';
+            }
+
+            document.getElementById('v-nama').textContent = this.getAttribute('data-nama');
+            document.getElementById('v-nik').textContent = 'NIK: ' + this.getAttribute('data-nik');
+            document.getElementById('v-m-nama').textContent = this.getAttribute('data-m-nama');
+            document.getElementById('v-m-npk').textContent = 'NIK: ' + this.getAttribute('data-m-npk');
+            document.getElementById('v-imei').textContent = this.getAttribute('data-imei');
+        });
+    });
+
     const editModal = document.getElementById('editGadgetModal');
     if(editModal) {
         editModal.addEventListener('show.bs.modal', function(event) {
@@ -223,7 +314,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('modal-imei').value = imei;
             document.getElementById('modal-aplikasi').value = aplikasi;
             document.getElementById('modal-nama-display').textContent = nama;
-            document.getElementById('modal-nik-display').textContent = 'NIK: ' + nik;
+            document.getElementById('modal-npk-display').textContent = 'NIK: ' + nik;
         });
     }
 
@@ -233,14 +324,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const nama = this.getAttribute('data-nama');
             const imei = this.getAttribute('data-imei');
             const aplikasi = this.getAttribute('data-aplikasi');
-
             if (!imei) { alert('IMEI tidak ditemukan.'); return; }
-
             document.getElementById('print-nama').textContent = nama;
             document.getElementById('print-nik').textContent = nik;
             document.getElementById('print-aplikasi').textContent = aplikasi || '-';
             document.getElementById('print-imei').textContent = imei;
-            
             const qrUrl = `https://chart.googleapis.com/chart?chs=150x150&cht=qr&chl=${imei}&choe=UTF-8`;
             document.getElementById('print-qr').src = qrUrl;
             document.getElementById('print-qr').onload = function() { window.print(); };

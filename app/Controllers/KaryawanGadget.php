@@ -29,7 +29,7 @@ class KaryawanGadget extends BaseController
         $search = $this->request->getVar('search');
 
         $builder = $db->table('karyawan k');
-        $builder->select('k.*, dg.imei, dg.updated_at as reported_at, mg.aplikasi');
+        $builder->select('k.*, dg.imei, dg.updated_at as reported_at, mg.aplikasi, mg.npk as master_npk, mg.nama_pengguna as master_nama');
         $builder->join('distribusi_gadget dg', 'dg.karyawan_id = k.id', 'left');
         $builder->join('master_gadget mg', 'mg.imei = dg.imei', 'left');
         
