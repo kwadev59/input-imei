@@ -9,7 +9,8 @@ class KaryawanGadget extends BaseController
 {
     public function ceker()
     {
-        return $this->renderList('ceker', 'KRANI', 'List Gadget Ceker');
+        $afdelings = ['OA', 'OB', 'OC', 'OD', 'OE', 'OF', 'OG'];
+        return $this->renderList('ceker', 'KRANI', 'List Gadget Ceker', $afdelings);
     }
 
     public function mtrp()
@@ -17,7 +18,7 @@ class KaryawanGadget extends BaseController
         return $this->renderList('mtrp', 'MANDOR TRANSPORT', 'List Gadget MTRP');
     }
 
-    private function renderList($type, $jabatanKeyword, $title)
+    private function renderList($type, $jabatanKeyword, $title, $afdelingFilter = [])
     {
         $session = session();
         if(!$session->get('logged_in') || $session->get('role') != 'admin'){
@@ -34,6 +35,11 @@ class KaryawanGadget extends BaseController
         
         // Filter berdasarkan jabatan
         $builder->like('k.jabatan', $jabatanKeyword);
+
+        // Filter berdasarkan afdeling jika ada
+        if(!empty($afdelingFilter)){
+            $builder->whereIn('k.afdeling', $afdelingFilter);
+        }
 
         if($search){
             $builder->groupStart()
