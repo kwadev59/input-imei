@@ -26,6 +26,8 @@ $menu_groups = [
         'items' => [
             'mandor'   => ['icon' => 'bi-person-badge-fill', 'label' => 'List Mandor',   'url' => 'mandor'],
             'mandor_gadget' => ['icon' => 'bi-phone-fill', 'label' => 'List Gadget Mandor', 'url' => 'mandor/gadgets'],
+            'gadget_ceker' => ['icon' => 'bi-phone-fill', 'label' => 'List Gadget Ceker', 'url' => 'karyawan/gadget-ceker'],
+            'gadget_mtrp' => ['icon' => 'bi-phone-fill', 'label' => 'List Gadget MTRP', 'url' => 'karyawan/gadget-mtrp'],
             'karyawan' => ['icon' => 'bi-people-fill',       'label' => 'Data Karyawan', 'url' => 'karyawan'],
             'real_karyawan' => ['icon' => 'bi-person-vcard-fill', 'label' => 'Real Karyawan', 'url' => 'real-karyawan'],
             'real_gadget'   => ['icon' => 'bi-router-fill',       'label' => 'Real Gadget', 'url' => 'real-gadget'],

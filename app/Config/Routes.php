@@ -44,6 +44,10 @@ $routes->post('/karyawan/update-mutasi/(:num)', 'Karyawan::updateMutasi/$1');
 $routes->post('/karyawan/update/(:num)', 'Karyawan::update/$1');
 $routes->post('/karyawan/import', 'Karyawan::import');
 
+// Gadget List by Jabatan
+$routes->get('/karyawan/gadget-ceker', 'KaryawanGadget::ceker');
+$routes->get('/karyawan/gadget-mtrp', 'KaryawanGadget::mtrp');
+
 // Master Gadget
 $routes->get('/api_npk/get_npk', 'Api_npk::get_npk');
 $routes->get('/api_npk/get_gadget', 'Api_npk::get_gadget');
