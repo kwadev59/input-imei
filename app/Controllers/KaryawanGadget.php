@@ -28,7 +28,7 @@ class KaryawanGadget extends BaseController
         $search = $this->request->getVar('search');
 
         $builder = $db->table('karyawan k');
-        $builder->select('k.*, dg.imei, dg.aplikasi, dg.updated_at as reported_at');
+        $builder->select('k.*, dg.imei, dg.updated_at as reported_at');
         $builder->join('distribusi_gadget dg', 'dg.karyawan_id = k.id', 'left');
         
         // Filter berdasarkan jabatan

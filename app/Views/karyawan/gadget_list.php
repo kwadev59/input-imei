@@ -37,14 +37,13 @@
                         <th>Jabatan</th>
                         <th>Afdeling</th>
                         <th>IMEI Gadget</th>
-                        <th>Aplikasi</th>
                         <th>Terakhir Update</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php if(empty($items)): ?>
                         <tr>
-                            <td colspan="7" class="text-center py-5 text-muted">
+                            <td colspan="6" class="text-center py-5 text-muted">
                                 <i class="bi bi-info-circle fs-2 d-block mb-2"></i>
                                 Tidak ada data ditemukan.
                             </td>
@@ -61,13 +60,6 @@
                                     <span class="badge bg-primary font-monospace"><?= esc($row['imei']) ?></span>
                                 <?php else: ?>
                                     <span class="text-muted small"><em>Belum ada data</em></span>
-                                <?php endif; ?>
-                            </td>
-                            <td>
-                                <?php if($row['aplikasi']): ?>
-                                    <span class="badge badge-soft-success"><?= esc($row['aplikasi']) ?></span>
-                                <?php else: ?>
-                                    -
                                 <?php endif; ?>
                             </td>
                             <td class="small text-muted">
