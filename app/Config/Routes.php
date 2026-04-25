@@ -47,6 +47,7 @@ $routes->post('/karyawan/import', 'Karyawan::import');
 // Gadget List by Jabatan
 $routes->get('/karyawan/gadget-ceker', 'KaryawanGadget::ceker');
 $routes->get('/karyawan/gadget-mtrp', 'KaryawanGadget::mtrp');
+$routes->post('/karyawan/save-gadget-karyawan', 'KaryawanGadget::save_gadget_karyawan');
 
 // Master Gadget
 $routes->get('/api_npk/get_npk', 'Api_npk::get_npk');
