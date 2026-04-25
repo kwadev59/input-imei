@@ -28,8 +28,9 @@ class KaryawanGadget extends BaseController
         $search = $this->request->getVar('search');
 
         $builder = $db->table('karyawan k');
-        $builder->select('k.*, dg.imei, dg.updated_at as reported_at');
+        $builder->select('k.*, dg.imei, dg.updated_at as reported_at, mg.aplikasi');
         $builder->join('distribusi_gadget dg', 'dg.karyawan_id = k.id', 'left');
+        $builder->join('master_gadget mg', 'mg.imei = dg.imei', 'left');
         
         // Filter berdasarkan jabatan
         $builder->like('k.jabatan', $jabatanKeyword);
@@ -40,6 +41,7 @@ class KaryawanGadget extends BaseController
                     ->orLike('k.nik_karyawan', $search)
                     ->orLike('k.afdeling', $search)
                     ->orLike('dg.imei', $search)
+                    ->orLike('mg.aplikasi', $search)
                     ->groupEnd();
         }
 
