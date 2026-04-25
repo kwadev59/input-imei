@@ -120,22 +120,6 @@
     Astra Agro Lestari &copy; <?= date('Y') ?>
 </div>
 
-<!-- Modal Konfirmasi -->
-<div class="modal fade" id="validationModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><i class="bi bi-clipboard-check me-2"></i>Konfirmasi Data</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div id="validation-content"></div>
-            </div>
-            <div class="modal-footer" id="validation-actions"></div>
-        </div>
-    </div>
-</div>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -149,70 +133,34 @@ $(document).ready(function() {
     });
 
     $('#form-input-karyawan').on('submit', function(e) {
+        if ($(this).data('verified')) {
+            return; // Allow form submission
+        }
+        
         e.preventDefault();
         var nik = $('#input-nik').val().trim();
         var app = $('select[name="aplikasi"]').val();
         var imei = $('#input-imei').val().trim();
         
-        if(!nik || !app || imei.length !== 15) return alert('Lengkapi data dengan benar.');
+        if(!nik || !app || imei.length !== 15) return alert('Lengkapi data dengan benar (IMEI harus 15 digit).');
 
         $('#btn-submit').addClass('loading').prop('disabled', true);
 
-        // 1. Cek NIK
+        // Hanya verifikasi apakah NIK terdaftar di sistem sesuai jabatan
         $.get('<?= base_url('public/check-nik') ?>', { nik: nik, type: '<?= $type ?>' }, function(nikRes) {
+            $('#btn-submit').removeClass('loading').prop('disabled', false);
+            
             if(nikRes.status !== 'success') {
-                $('#btn-submit').removeClass('loading').prop('disabled', false);
                 return alert(nikRes.message);
             }
 
-            // 2. Cek IMEI
-            $.post('<?= base_url('public/validate-imei') ?>', { imei: imei, npk: nik }, function(imeiRes) {
-                $('#btn-submit').removeClass('loading').prop('disabled', false);
-                showValidation(nik, nikRes.nama, app, imei, imeiRes);
-            });
+            // Jika NIK valid, langsung submit form tanpa modal konfirmasi
+            $('#form-input-karyawan').data('verified', true).submit();
+        }).fail(function() {
+            $('#btn-submit').removeClass('loading').prop('disabled', false);
+            alert('Terjadi kesalahan jaringan saat verifikasi NIK.');
         });
     });
-
-    function showValidation(nik, nama, app, imei, res) {
-        var html = `
-            <div class="validation-section">
-                <div class="validation-label">Karyawan</div>
-                <div class="validation-value">${nama}</div>
-                <div class="small text-muted">NIK: ${nik}</div>
-            </div>
-            <div class="validation-divider"></div>
-            <div class="validation-section">
-                <div class="validation-label">Aplikasi & IMEI</div>
-                <div class="validation-value">${app}</div>
-                <div class="font-monospace text-primary fw-bold" style="font-size:1.2rem; letter-spacing:1px;">${imei}</div>
-            </div>
-        `;
-
-        if(res.status === 'not_registered') {
-            html += `<div class="alert alert-danger mt-3 small"><i class="bi bi-x-circle me-1"></i> IMEI tidak terdaftar di Master Gadget.</div>`;
-        } else if(res.status === 'owned_by_other') {
-            html += `<div class="owner-info-card mt-3">
-                <div class="text-warning fw-bold mb-1"><i class="bi bi-exclamation-triangle"></i> IMEI Terdaftar Atas Nama Lain:</div>
-                <div>${res.owner_name} (${res.owner_npk})</div>
-            </div>`;
-        } else {
-            html += `<div class="alert alert-success mt-3 small"><i class="bi bi-check-circle me-1"></i> Data IMEI Cocok.</div>`;
-        }
-
-        $('#validation-content').html(html);
-        
-        var actions = `
-            <button type="button" class="btn-modal secondary" data-bs-dismiss="modal">Batal</button>
-            <button type="button" class="btn-modal primary" id="btn-final-save">Simpan Data</button>
-        `;
-        $('#validation-actions').html(actions);
-        
-        $('#btn-final-save').on('click', function() {
-            $('#form-input-karyawan').off('submit').submit();
-        });
-
-        new bootstrap.Modal(document.getElementById('validationModal')).show();
-    }
 });
 </script>
 </body>
