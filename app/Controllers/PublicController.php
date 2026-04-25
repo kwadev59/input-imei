@@ -112,39 +112,135 @@ class PublicController extends Controller
         return false;
     }
 
-    public function save_gadget()
+    public function input_ceker()
     {
-        $npk = trim($this->request->getVar('npk') ?? '');
+        return $this->render_public_input('Ceker', 'List Gadget Ceker');
+    }
+
+    public function input_mtrp()
+    {
+        return $this->render_public_input('MTRP', 'List Gadget MTRP');
+    }
+
+    private function render_public_input($type, $title)
+    {
+        $db = \Config\Database::connect();
+        $settingsModel = new SettingsModel();
+
+        $apps = $db->table('master_gadget')
+                   ->select('aplikasi')
+                   ->where('aplikasi IS NOT NULL')
+                   ->where('aplikasi !=', '')
+                   ->distinct()
+                   ->get()->getResultArray();
+
+        $data['applications'] = array_column($apps, 'aplikasi');
+        $data['title'] = $title;
+        $data['type'] = $type;
+        $data['popup_instruction'] = $settingsModel->get_value('mandor_popup_instruction');
+
+        return view('public/input_karyawan', $data);
+    }
+
+    // AJAX: Cek NIK Karyawan
+    public function ajax_check_nik()
+    {
+        $nik = trim($this->request->getVar('nik') ?? '');
+        $type = $this->request->getVar('type'); // Ceker atau MTRP
+
+        if(empty($nik)){
+            return $this->response->setJSON(['status' => 'error', 'message' => 'NIK tidak boleh kosong']);
+        }
+
+        $db = \Config\Database::connect();
+        $builder = $db->table('karyawan');
+        $builder->where('nik_karyawan', $nik);
+
+        if($type === 'Ceker'){
+            $builder->like('jabatan', 'KRANI');
+            $builder->whereIn('afdeling', ['OA', 'OB', 'OC', 'OD', 'OE', 'OF', 'OG']);
+        } else {
+            $builder->where('jabatan', 'MANDOR TRANSPORT');
+        }
+
+        $karyawan = $builder->get()->getRowArray();
+
+        if(!$karyawan){
+            return $this->response->setJSON(['status' => 'error', 'message' => "NIK {$nik} tidak terdaftar sebagai {$type} yang valid."]);
+        }
+
+        return $this->response->setJSON([
+            'status' => 'success', 
+            'nama' => $karyawan['nama'],
+            'jabatan' => $karyawan['jabatan'],
+            'afdeling' => $karyawan['afdeling']
+        ]);
+    }
+
+    public function save_karyawan_gadget()
+    {
+        $nik = trim($this->request->getVar('npk') ?? '');
         $aplikasi = $this->request->getVar('aplikasi');
         $imei = trim($this->request->getVar('imei') ?? '');
+        $type = $this->request->getVar('type');
 
-        if(empty($npk) || empty($aplikasi) || empty($imei)){
+        if(empty($nik) || empty($aplikasi) || empty($imei)){
             return redirect()->back()->withInput()->with('error', 'Semua field wajib diisi.');
         }
 
         $db = \Config\Database::connect();
-
-        // Check if NPK already reported something
-        $existingReport = $db->table('mandor_self_reports')->where('npk', $npk)->get()->getRowArray();
-
-        if($existingReport){
-            // Update existing report
-            $db->table('mandor_self_reports')->where('id', $existingReport['id'])->update([
-                'imei' => $imei,
-                'aplikasi' => $aplikasi,
-                'updated_at' => date('Y-m-d H:i:s')
-            ]);
+        
+        // 1. Validasi ulang karyawan
+        $builder = $db->table('karyawan');
+        $builder->where('nik_karyawan', $nik);
+        if($type === 'Ceker'){
+            $builder->like('jabatan', 'KRANI');
         } else {
-            // Insert new report
-            $db->table('mandor_self_reports')->insert([
-                'npk' => $npk,
+            $builder->where('jabatan', 'MANDOR TRANSPORT');
+        }
+        $karyawan = $builder->get()->getRowArray();
+
+        if(!$karyawan){
+            return redirect()->back()->withInput()->with('error', 'Data karyawan tidak valid.');
+        }
+
+        // 2. Simpan ke distribusi_gadget
+        $exist = $db->table('distribusi_gadget')->where('karyawan_id', $karyawan['id'])->get()->getRowArray();
+
+        $data = [
+            'karyawan_id'   => $karyawan['id'],
+            'imei'          => $imei,
+            'status_gadget' => 'Ada',
+            'input_by'      => 0, // Public input
+            'input_at'      => date('Y-m-d H:i:s'),
+            'updated_at'    => date('Y-m-d H:i:s'),
+            'status_pengajuan' => 'Submitted'
+        ];
+
+        if ($exist) {
+            $db->table('distribusi_gadget')->where('id', $exist['id'])->update($data);
+        } else {
+            $data['created_at'] = date('Y-m-d H:i:s');
+            $db->table('distribusi_gadget')->insert($data);
+        }
+
+        // 3. Sync ke master_gadget
+        $master = $db->table('master_gadget')->where('imei', $imei)->get()->getRowArray();
+        if ($master) {
+            $db->table('master_gadget')->where('imei', $imei)->update(['aplikasi' => $aplikasi]);
+        } else {
+            $db->table('master_gadget')->insert([
                 'imei' => $imei,
                 'aplikasi' => $aplikasi,
-                'created_at' => date('Y-m-d H:i:s'),
-                'updated_at' => date('Y-m-d H:i:s')
+                'pt' => $karyawan['pt_site'] ?? '',
+                'afdeling' => $karyawan['afdeling'] ?? '',
+                'nama_pengguna' => $karyawan['nama'] ?? '',
+                'npk' => $karyawan['nik_karyawan'] ?? '',
+                'status' => 'Aktif'
             ]);
         }
 
-        return redirect()->to('/public/input-gadget')->with('success', "Terima kasih, data gadget Anda berhasil disimpan.");
+        $redirectUrl = ($type === 'Ceker') ? '/public/input-ceker' : '/public/input-mtrp';
+        return redirect()->to($redirectUrl)->with('success', "Terima kasih, data gadget Anda ({$karyawan['nama']}) berhasil disimpan.");
     }
 }

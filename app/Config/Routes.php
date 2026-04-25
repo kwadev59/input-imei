@@ -32,6 +32,12 @@ $routes->get('/public/input-gadget', 'PublicController::input_gadget');
 $routes->post('/public/input-gadget', 'PublicController::save_gadget');
 $routes->post('/public/validate-imei', 'PublicController::validate_imei');
 
+// Public Karyawan Input (Ceker & MTRP)
+$routes->get('/public/input-ceker', 'PublicController::input_ceker');
+$routes->get('/public/input-mtrp', 'PublicController::input_mtrp');
+$routes->get('/public/check-nik', 'PublicController::ajax_check_nik');
+$routes->post('/public/save-karyawan-gadget', 'PublicController::save_karyawan_gadget');
+
 // Karyawan Management
 $routes->get('/karyawan', 'Karyawan::index');
 $routes->get('/karyawan/create', 'Karyawan::create');
