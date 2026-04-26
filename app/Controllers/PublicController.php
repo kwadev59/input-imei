@@ -233,10 +233,10 @@ class PublicController extends Controller
                 'imei' => $imei,
                 'aplikasi' => $aplikasi,
                 'pt' => $karyawan['pt_site'] ?? '',
-                'afdeling' => $karyawan['afdeling'] ?? '',
+                'afd' => $karyawan['afdeling'] ?? '',
                 'nama_pengguna' => $karyawan['nama'] ?? '',
-                'npk' => $karyawan['nik_karyawan'] ?? '',
-                'status' => 'Aktif'
+                'npk_pengguna' => $karyawan['nik_karyawan'] ?? '',
+                'status_desc' => 'Aktif'
             ]);
         }
 
