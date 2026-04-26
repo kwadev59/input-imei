@@ -58,7 +58,14 @@
                                     $status_label = 'Tidak Terdaftar';
                                     $status_class = 'bg-dark';
                                 } else {
-                                    $is_match = (trim($row['nik_karyawan']) == trim($row['master_npk']));
+                                    $nik1 = trim($row['nik_karyawan']);
+                                    $nik2 = trim($row['master_npk']);
+                                    
+                                    // Logic Fuzzy Match:
+                                    // 1. Sama persis
+                                    // 2. 6 digit pertama sama (menangani kasus 1733751 vs 173375)
+                                    $is_match = ($nik1 == $nik2) || (substr($nik1, 0, 6) == substr($nik2, 0, 6));
+                                    
                                     if ($is_match) {
                                         $status = 'match';
                                         $status_label = 'Cocok';
