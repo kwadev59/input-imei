@@ -145,14 +145,27 @@ class KaryawanGadget extends BaseController
 
         $db = \Config\Database::connect();
         
-        // Cari data distribusi untuk mendapatkan karyawan_id (jika perlu logging atau cleanup master)
-        $dist = $db->table('distribusi_gadget')->where('id', $id)->get()->getRowArray();
+        // 1. Ambil data distribusi sebelum dihapus untuk mendapatkan IMEI
+        $dist = $db->table('distribusi_gadget')->where('karyawan_id', $id)->get()->getRowArray();
         
         if ($dist) {
-            // Hapus dari distribusi_gadget
-            $db->table('distribusi_gadget')->where('id', $id)->delete();
+            $imei = $dist['imei'];
+
+            // 2. Hapus dari distribusi_gadget berdasarkan karyawan_id
+            $db->table('distribusi_gadget')->where('karyawan_id', $id)->delete();
+
+            // 3. (Opsional) Bersihkan info pengguna di master_gadget agar tidak nyangkut
+            if ($imei) {
+                $db->table('master_gadget')
+                   ->where('imei', $imei)
+                   ->update([
+                       'npk_pengguna' => null,
+                       'nama_pengguna' => null,
+                       'aplikasi' => null
+                   ]);
+            }
         }
 
-        return redirect()->back()->with('success', 'Data input gadget berhasil dihapus.');
+        return redirect()->back()->with('success', 'Data input gadget berhasil dihapus sepenuhnya.');
     }
 }
