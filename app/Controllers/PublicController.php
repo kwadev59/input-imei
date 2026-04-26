@@ -207,11 +207,15 @@ class PublicController extends Controller
         // 2. Simpan ke distribusi_gadget
         $exist = $db->table('distribusi_gadget')->where('karyawan_id', $karyawan['id'])->get()->getRowArray();
 
+        // Cari ID admin valid untuk memenuhi constraint input_by
+        $admin = $db->table('users')->where('role', 'admin')->get()->getRowArray();
+        $adminId = $admin ? $admin['id'] : 1;
+
         $data = [
             'karyawan_id'   => $karyawan['id'],
             'imei'          => $imei,
             'status_gadget' => 'Ada',
-            'input_by'      => 0, // Public input
+            'input_by'      => $adminId, 
             'input_at'      => date('Y-m-d H:i:s'),
             'updated_at'    => date('Y-m-d H:i:s'),
             'status_pengajuan' => 'Submitted'
