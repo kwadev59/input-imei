@@ -54,6 +54,7 @@ $routes->post('/karyawan/import', 'Karyawan::import');
 $routes->get('/karyawan/gadget-ceker', 'KaryawanGadget::ceker');
 $routes->get('/karyawan/gadget-mtrp', 'KaryawanGadget::mtrp');
 $routes->post('/karyawan/save-gadget-karyawan', 'KaryawanGadget::save_gadget_karyawan');
+$routes->get('/karyawan/delete-gadget-karyawan/(:num)', 'KaryawanGadget::delete_assignment/$1');
 
 // Master Gadget
 $routes->get('/api_npk/get_npk', 'Api_npk::get_npk');

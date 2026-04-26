@@ -132,4 +132,27 @@ class KaryawanGadget extends BaseController
 
         return redirect()->back()->with('success', 'Data gadget berhasil disimpan.');
     }
+
+    /**
+     * Delete gadget assignment (Remove from distribusi_gadget)
+     */
+    public function delete_assignment($id)
+    {
+        $session = session();
+        if(!$session->get('logged_in') || $session->get('role') != 'admin'){
+            return redirect()->to('/auth');
+        }
+
+        $db = \Config\Database::connect();
+        
+        // Cari data distribusi untuk mendapatkan karyawan_id (jika perlu logging atau cleanup master)
+        $dist = $db->table('distribusi_gadget')->where('id', $id)->get()->getRowArray();
+        
+        if ($dist) {
+            // Hapus dari distribusi_gadget
+            $db->table('distribusi_gadget')->where('id', $id)->delete();
+        }
+
+        return redirect()->back()->with('success', 'Data input gadget berhasil dihapus.');
+    }
 }

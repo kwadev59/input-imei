@@ -133,6 +133,12 @@
                                                 data-imei="<?= esc($row['imei'] ?? '') ?>">
                                             <i class="bi bi-printer"></i>
                                         </button>
+                                        <a href="<?= base_url('karyawan/delete-gadget-karyawan/' . $row['id']) ?>" 
+                                           class="btn btn-sm btn-outline-danger" 
+                                           onclick="return confirm('Hapus data input gadget untuk karyawan ini?')"
+                                           title="Hapus Data">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
                                     <?php endif; ?>
                                 </div>
                             </td>
