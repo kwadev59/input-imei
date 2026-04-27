@@ -130,3 +130,11 @@ $routes->group('api/print', function ($routes) {
     // [Frontend/Admin] Cek status antrian
     $routes->get('status', 'Api\PrintQueue::status');
 });
+
+// =====================================================
+// API Data Access
+// =====================================================
+$routes->group('api/data', ['filter' => 'apiKey'], function ($routes) {
+    $routes->get('karyawan', 'Api\DataApi::getKaryawan');
+    $routes->get('gadget', 'Api\DataApi::getGadget');
+});

@@ -36,6 +36,7 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
         'tokenAuth'     => \App\Filters\TokenAuth::class,
         'isLoggedIn'    => \App\Filters\AuthFilter::class,
+        'apiKey'        => \App\Filters\ApiKeyFilter::class,
     ];
 
     /**
@@ -82,6 +83,7 @@ class Filters extends BaseFilters
                 'public/*',             // Public pages (no login required)
                 'api/print',            // Root API Print (POST submit)
                 'api/print/*',          // API di-handle oleh tokenAuth filter
+                'api/data/*',           // API Data di-handle oleh apiKey filter
             ]],
             // 'honeypot',
             // 'csrf',
