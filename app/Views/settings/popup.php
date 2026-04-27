@@ -59,8 +59,57 @@
                     </div>
                 </div>
             </div>
+
+            <!-- API Access Information -->
+            <div class="data-card mt-4">
+                <div class="data-card-header bg-dark text-white">
+                    <h5><i class="bi bi-key"></i> API Access Data (Dev/Prod)</h5>
+                </div>
+                <div class="data-card-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted small">X-API-KEY</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light" value="<?= esc($api_key) ?>" readonly id="apiKeyInput">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('apiKeyInput')">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-muted small">ENDPOINT KARYAWAN</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light" value="<?= esc($api_endpoint_karyawan) ?>" readonly id="endpointKaryawan">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('endpointKaryawan')">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <label class="form-label fw-bold text-muted small">ENDPOINT GADGET</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light" value="<?= esc($api_endpoint_gadget) ?>" readonly id="endpointGadget">
+                            <button class="btn btn-outline-secondary" type="button" onclick="copyToClipboard('endpointGadget')">
+                                <i class="bi bi-clipboard"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-text mt-3 text-info">
+                        <i class="bi bi-info-circle me-1"></i> Gunakan <code>X-API-KEY</code> pada header request untuk mengakses data.
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<script>
+function copyToClipboard(id) {
+    var copyText = document.getElementById(id);
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(copyText.value);
+    alert("Copied to clipboard: " + copyText.value);
+}
+</script>
 
 <?= view('partials/admin_footer') ?>

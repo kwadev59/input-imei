@@ -23,6 +23,11 @@ class Settings extends Controller
         $data['instruction'] = $settingsModel->get_value('mandor_popup_instruction');
         $data['user_nama'] = $session->get('nama');
         $data['active_menu'] = 'settings_popup';
+        
+        // API Info
+        $data['api_key'] = env('API_KEY', 'default_secret_key_123');
+        $data['api_endpoint_karyawan'] = base_url('api/data/karyawan');
+        $data['api_endpoint_gadget'] = base_url('api/data/gadget');
 
         return view('settings/popup', $data);
     }
